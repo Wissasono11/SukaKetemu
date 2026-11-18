@@ -1,13 +1,19 @@
-# SukaKetemu
+# SukaKetemu 🔍
 
 > Platform pelaporan dan penelusuran barang hilang di lingkungan kampus UIN Sunan Kalijaga Yogyakarta.
 
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=flat-square&logo=vercel)](https://vercel.com)
+[![React](https://img.shields.io/badge/Frontend-React_18_PWA-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![Express](https://img.shields.io/badge/Backend-Express.js_TypeScript-000000?style=flat-square&logo=express)](https://expressjs.com)
+[![Hugging Face](https://img.shields.io/badge/AI_Inference-Docker_HFS-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://huggingface.co)
+[![PostgreSQL](https://img.shields.io/badge/Vector_DB-pgvector_Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=black)](https://supabase.com)
+[![UU PDP](https://img.shields.io/badge/Compliance-UU_PDP_No._27/2022-blue?style=flat-square&logo=shield)](https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022)
 
 SukaKetemu adalah platform pelaporan dan penelusuran barang hilang di lingkungan kampus UIN Sunan Kalijaga Yogyakarta. Sistem ini menggunakan pencocokan visual dan teks serta pelacakan titik lokasi untuk mempercepat penemuan barang kembali dan mencegah klaim palsu.
 
 ---
 
-## Masalah yang Diselesaikan
+## 📌 Masalah yang Diselesaikan
 
 Penyebaran informasi barang hilang di kampus selama ini bergantung pada grup WhatsApp dan akun media sosial. Cara ini menimbulkan kendala:
 
@@ -19,7 +25,7 @@ SukaKetemu menyediakan alur pencatatan terpusat, menyamarkan data sensitif pada 
 
 ---
 
-## Alur Kerja Sistem
+## 🔄 Alur Kerja Sistem
 
 1. **Pelaporan:** Penemu mengunggah foto barang (dikompresi otomatis di sisi klien hingga maksimal 1,5 MB), menentukan lokasi via pemindaian QR checkpoint atau menu gedung, lalu memilih status penguasaan barang (dititipkan di pos satpam atau masih dibawa penemu).
 2. **Pencocokan AI:** Model Vision-Language mengekstrak vektor representasi citra dan teks untuk menghitung skor kemiripan laporan hilang dan temuan dengan target Top-5 Accuracy minimal 70%.
@@ -28,7 +34,7 @@ SukaKetemu menyediakan alur pencatatan terpusat, menyamarkan data sensitif pada 
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Komponen | Teknologi | Keterangan |
 | :--- | :--- | :--- |
@@ -40,7 +46,7 @@ SukaKetemu menyediakan alur pencatatan terpusat, menyamarkan data sensitif pada 
 
 ---
 
-## Panduan Kloning dan Instalasi
+## 🚀 Panduan Kloning dan Instalasi
 
 Prasyarat: Node.js (versi 20 LTS atau lebih baru) dan Git.
 
@@ -76,7 +82,7 @@ Server backend berjalan di `http://localhost:3000`.
 
 ---
 
-## Tim Pengembang
+## 👥 Tim Pengembang
 
 Proyek ini dikembangkan oleh mahasiswa Program Studi Informatika, Fakultas Sains dan Teknologi, UIN Sunan Kalijaga Yogyakarta:
 
