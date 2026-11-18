@@ -1,0 +1,134 @@
+# --- Dependencies ---
+node_modules/
+.pnp
+.pnp.js
+jspm_packages/
+
+# --- Environment Variables & Secrets (CRITICAL) ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.pem
+*.key
+*.cert
+credentials.json
+service-account*.json
+
+# --- Production & Build Outputs ---
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.output/
+
+# --- Vercel Serverless Deployment ---
+.vercel/
+
+# --- Cache & Runtime Storage ---
+.vite/
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Python & AI Inference Service (ai-service/) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+pip-wheel-metadata/
+
+# Large Model Files & Raw Datasets (Track via Git LFS / Hugging Face if needed)
+*.onnx
+*.onnx.data
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.h5
+ai-service/dataset/raw/
+ai-service/models/*.onnx
+
+# --- Testing & Code Coverage ---
+coverage/
+.nyc_output/
+*.lcov
+reports/
+.lighthouseci/
+
+# --- Database & Local Storage Dumps ---
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+prisma/migrations/migration_lock.toml
+
+# --- Operating System Files ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# --- IDE & Code Editors ---
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+
+# --- Internal Documentation & Planning ---
+planning/
