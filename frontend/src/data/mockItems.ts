@@ -1,0 +1,76 @@
+import type { LostFoundItem, ItemCategory } from '../types/lostFound'
+
+export const INITIAL_ITEMS: LostFoundItem[] = [
+  {
+    id: '1',
+    title: 'TWS Soundcore R50i',
+    category: 'elektronik',
+    categoryLabel: 'Elektronik',
+    imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Matte black wireless earbud case on academic desk',
+    custody: 'pos_satpam',
+    locationDetail: 'Pos Utama FST • 12m lalu',
+  },
+  {
+    id: '2',
+    title: 'KTM Mahasiswa FST',
+    category: 'dokumen',
+    categoryLabel: 'Dokumen/KTM',
+    imageUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Kartu Tanda Mahasiswa di meja kampus',
+    custody: 'dibawa_penemu',
+    locationDetail: 'Dibawa Penemu • R. 304',
+    isPrivacySensitive: true,
+    privacyReason: 'Privasi UU PDP',
+  },
+  {
+    id: '3',
+    title: 'Tumbler Hitam Matte',
+    category: 'botol',
+    categoryLabel: 'Botol Minum',
+    imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Tumbler stainless steel matte di lab kampus',
+    custody: 'pos_satpam',
+    locationDetail: 'Pos Lab Terpadu • 1j lalu',
+  },
+  {
+    id: '4',
+    title: 'Dompet Kulit Cokelat',
+    category: 'tas',
+    categoryLabel: 'Tas/Dompet',
+    imageUrl: 'https://images.unsplash.com/photo-1627123424574-724758594e93?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Dompet lipat kulit cokelat di lobi fakultas',
+    custody: 'dibawa_penemu',
+    locationDetail: 'Lobi Lt. 1 FST • 2j lalu',
+  },
+  {
+    id: '5',
+    title: 'Mukena Parasut Khaki',
+    category: 'ibadah',
+    categoryLabel: 'Perlengkapan Ibadah',
+    imageUrl: 'https://images.unsplash.com/photo-1584286595398-a59f21d313f5?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Tas mukena parasut di musholla lantai 2',
+    custody: 'pos_satpam',
+    locationDetail: 'Musholla Lt. 2 FST • 3j lalu',
+  },
+  {
+    id: '6',
+    title: 'Kalkulator Casio FX-991EX',
+    category: 'elektronik',
+    categoryLabel: 'Elektronik',
+    imageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?q=80&w=600&auto=format&fit=crop',
+    imageAlt: 'Kalkulator ilmiah saintifik di meja praktikum',
+    custody: 'pos_satpam',
+    locationDetail: 'Lab Fisika Dasar • 4j lalu',
+  }
+]
+
+export const CATEGORIES: { id: ItemCategory; label: string }[] = [
+  { id: 'all', label: 'Semua' },
+  { id: 'elektronik', label: 'Elektronik' },
+  { id: 'dokumen', label: 'Dokumen/KTM' },
+  { id: 'botol', label: 'Botol Minum' },
+  { id: 'tas', label: 'Tas/Dompet' },
+  { id: 'ibadah', label: 'Perlengkapan Ibadah' },
+  { id: 'lainnya', label: 'Lainnya' },
+]
