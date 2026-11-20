@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { ChevronRight, Search, FileSearch, Camera, X } from 'lucide-react'
-import type { ItemCategory } from '../types/lostFound'
+import type { ItemCategory, LostFoundItem } from '../types/lostFound'
 import { INITIAL_ITEMS } from '../data/mockItems'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
@@ -8,6 +8,7 @@ import { QuickActions } from '../components/home/QuickActions'
 import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
 import { CategoryChips } from '../components/home/CategoryChips'
 import { ItemCard } from '../components/home/ItemCard'
+import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { ActionModal } from '../components/home/ActionModal'
@@ -23,6 +24,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [activeActionModal, setActiveActionModal] = useState<string | null>(null)
   const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
   const [showQuickReportSheet, setShowQuickReportSheet] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
 
   const filteredItems = useMemo(() => {
     return INITIAL_ITEMS.filter((item) => {
@@ -75,13 +77,41 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               <h3 className="text-sm font-bold text-[#14261B]">Barang Temuan Terbaru</h3>
               <button
                 type="button"
-                onClick={() => setSelectedCategory('all')}
+                onClick={() => {
+                  setSelectedCategory('all')
+                  setSearchQuery('')
+                }}
                 className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] flex items-center gap-0.5"
               >
                 Lihat Semua ({INITIAL_ITEMS.length})
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
+
+            {/* Feedback Status Filter / Pencarian Aktif */}
+            {(searchQuery.trim() !== '' || selectedCategory !== 'all') && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100/90 border border-slate-200/60 text-xs text-[#14261B]">
+                <span className="truncate mr-2">
+                  Menampilkan <strong>{filteredItems.length}</strong> barang
+                  {searchQuery.trim() && (
+                    <> untuk "<strong>{searchQuery}</strong>"</>
+                  )}
+                  {selectedCategory !== 'all' && (
+                    <span className="text-[#44574B]"> (kategori: {selectedCategory})</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSelectedCategory('all')
+                  }}
+                  className="text-xs font-bold text-[#155E38] hover:text-[#0F4A2C] whitespace-nowrap"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
 
             {filteredItems.length === 0 ? (
               <div className="w-full py-12 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-dashed border-slate-200 p-6">
@@ -106,7 +136,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {filteredItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    onClick={() => setSelectedItem(item)}
+                  />
                 ))}
               </div>
             )}
@@ -193,6 +227,12 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         <ActionModal
           title={activeActionModal}
           onClose={() => setActiveActionModal(null)}
+        />
+
+        {/* Modal Detail Barang Temuan */}
+        <ItemDetailModal
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
         />
       </div>
     </div>

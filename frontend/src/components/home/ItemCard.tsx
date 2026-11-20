@@ -15,13 +15,25 @@ import type { LostFoundItem } from '../../types/lostFound'
 
 interface ItemCardProps {
   item: LostFoundItem
+  onClick?: () => void
 }
 
-export const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
+export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
   const isPosSatpam = item.custody === 'pos_satpam'
 
   return (
-    <article className="flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.04)] hover:shadow-md transition-all group">
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick?.()
+        }
+      }}
+      className="flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.04)] hover:shadow-md hover:border-[#155E38]/30 transition-all group cursor-pointer active:scale-[0.99] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38]"
+    >
       <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
         <img
           src={item.imageUrl}
