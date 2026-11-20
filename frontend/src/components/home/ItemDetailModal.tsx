@@ -177,7 +177,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               onClick={handleClaim}
               className="w-full py-3.5 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] active:scale-[0.99] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
             >
-              <span>Ajukan Klaim / Ini Barang Saya</span>
+              <span>Klaim Barang Ini</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
