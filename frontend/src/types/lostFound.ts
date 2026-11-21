@@ -35,3 +35,30 @@ export interface PosSatpamInfo {
   storedItemsCount: number
   operatingHours: string
 }
+
+export type ClaimStatus = 'waiting_review' | 'ready_for_pickup' | 'completed' | 'cancelled'
+
+export interface ClaimTimelineStep {
+  step: number
+  title: string
+  desc: string
+  isDone: boolean
+  isCurrent: boolean
+}
+
+export interface ClaimTicket {
+  id: string
+  ticketNumber: string
+  itemTitle: string
+  itemCategory: ItemCategory
+  categoryLabel: string
+  itemImageUrl: string
+  posLocation: string
+  status: ClaimStatus
+  statusLabel: string
+  otpCode: string
+  createdAt: string
+  pickupDeadline: string
+  matchedSecretFeature: string
+  timeline: ClaimTimelineStep[]
+}

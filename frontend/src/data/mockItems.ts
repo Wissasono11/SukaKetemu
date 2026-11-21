@@ -1,4 +1,4 @@
-import type { LostFoundItem, ItemCategory, PosSatpamInfo } from '../types/lostFound'
+import type { LostFoundItem, ItemCategory, PosSatpamInfo, ClaimTicket } from '../types/lostFound'
 
 export const INITIAL_ITEMS: LostFoundItem[] = [
   {
@@ -105,5 +105,84 @@ export const POS_SATPAM_LIST: PosSatpamInfo[] = [
     shift: 'Shift Pagi (07.00 - 15.00 WIB)',
     storedItemsCount: 4,
     operatingHours: '07.30 - 18.00 WIB',
+  },
+]
+
+export const INITIAL_CLAIM_TICKETS: ClaimTicket[] = [
+  {
+    id: 'ticket-1',
+    ticketNumber: 'CLM-FST-8821',
+    itemTitle: 'Kalkulator Casio FX-991EX Abu-abu',
+    itemCategory: 'elektronik',
+    categoryLabel: 'Elektronik',
+    itemImageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?q=80&w=600&auto=format&fit=crop',
+    posLocation: 'Pos Satpam Utama Lobby FST',
+    status: 'ready_for_pickup',
+    statusLabel: 'Siap Diambil di Pos',
+    otpCode: '5821',
+    createdAt: 'Hari ini, 10:15 WIB',
+    pickupDeadline: 'Besok, 21:00 WIB',
+    matchedSecretFeature: 'Stiker logo HIMATIF di dalam penutup baterai',
+    timeline: [
+      {
+        step: 1,
+        title: 'Klaim Diajukan',
+        desc: 'Hari ini, 10:15 WIB oleh Bayu Wicaksono',
+        isDone: true,
+        isCurrent: false,
+      },
+      {
+        step: 2,
+        title: 'Verifikasi Ciri Rahasia',
+        desc: 'Cocok 100% dengan data temuan satpam',
+        isDone: true,
+        isCurrent: false,
+      },
+      {
+        step: 3,
+        title: 'Pengambilan Fisik',
+        desc: 'Menunggu kedatangan Anda di Pos Satpam Utama',
+        isDone: false,
+        isCurrent: true,
+      },
+    ],
+  },
+  {
+    id: 'ticket-2',
+    ticketNumber: 'CLM-FST-7104',
+    itemTitle: 'Tumbler Stainless Hitam Matte',
+    itemCategory: 'botol',
+    categoryLabel: 'Botol Minum',
+    itemImageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=600&auto=format&fit=crop',
+    posLocation: 'Pos Satpam Gedung Lab Terpadu',
+    status: 'completed',
+    statusLabel: 'Selesai Diserahterimakan',
+    otpCode: '3190',
+    createdAt: '3 hari yang lalu',
+    pickupDeadline: 'Sudah Diambil',
+    matchedSecretFeature: 'Goresan kecil di dekat tutup botol',
+    timeline: [
+      {
+        step: 1,
+        title: 'Klaim Diajukan',
+        desc: '18 Nov 2026, 09:20 WIB',
+        isDone: true,
+        isCurrent: false,
+      },
+      {
+        step: 2,
+        title: 'Verifikasi Ciri Rahasia',
+        desc: 'Telah divalidasi oleh Pak Hendra',
+        isDone: true,
+        isCurrent: false,
+      },
+      {
+        step: 3,
+        title: 'Diserahterimakan',
+        desc: 'Telah diserahkan fisik pada 18 Nov 2026, 14:10 WIB',
+        isDone: true,
+        isCurrent: false,
+      },
+    ],
   },
 ]
