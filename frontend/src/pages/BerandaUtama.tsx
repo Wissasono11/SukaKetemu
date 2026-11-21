@@ -12,12 +12,43 @@ import { ItemCard } from '../components/home/ItemCard'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
-import { ActionModal } from '../components/modals/ActionModal'
 import { ScanQrModal } from '../components/modals/ScanQrModal'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
+import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
+
+const INITIAL_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif-1',
+    type: 'aimatch',
+    title: 'Radar AI: Kecocokan 94% Ditemukan',
+    message: 'TWS Soundcore hitam yang Anda laporkan terdeteksi sangat mirip dengan temuan di Musholla Lt. 2 FST.',
+    timeAgo: '10m lalu',
+    isRead: false,
+    actionLabel: 'Buka Radar AI',
+    actionTarget: 'aimatch',
+  },
+  {
+    id: 'notif-2',
+    type: 'claim',
+    title: 'Klaim Siap Diambil di Pos Satpam',
+    message: 'Tiket #CLM-FST-8821 telah disetujui. Silakan tunjukkan kode OTP di Pos Utama Lobby FST.',
+    timeAgo: '2j lalu',
+    isRead: false,
+    actionLabel: 'Buka Tiket Pengambilan',
+    actionTarget: 'claim',
+  },
+  {
+    id: 'notif-3',
+    type: 'system',
+    title: 'Layanan Pengamanan FST Aktif',
+    message: 'Semua checkpoint Pos Satpam FST siap melayani serah terima barang temuan mahasiswa.',
+    timeAgo: '1h lalu',
+    isRead: true,
+  },
+]
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -27,7 +58,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>(DEFAULT_FILTER_CRITERIA)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<TabId>('beranda')
-  const [activeActionModal, setActiveActionModal] = useState<string | null>(null)
+  const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
+  const [showNotificationDrawer, setShowNotificationDrawer] = useState(false)
   const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
   const [showQuickReportSheet, setShowQuickReportSheet] = useState(false)
   const [showScanQrModal, setShowScanQrModal] = useState(false)
@@ -35,6 +67,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [showAiMatchModal, setShowAiMatchModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
+
+  const hasUnreadNotifications = notifications.some((n) => !n.isRead)
 
   const selectedCategory = filterCriteria.category
   const handleSelectCategory = (cat: ItemCategory) => {
@@ -112,15 +146,18 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
       setShowCekKlaimModal(true)
     } else if (title === 'Pencocokan AI Multimodal') {
       setShowAiMatchModal(true)
-    } else {
-      setActiveActionModal(title)
+    } else if (title === 'Notifikasi') {
+      setShowNotificationDrawer(true)
     }
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#14261B] font-['Plus_Jakarta_Sans',sans-serif] flex flex-col items-center">
       <div className="w-full max-w-md bg-[#F8FAFC] min-h-screen flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.06)]">
-        <HomeHeader onNotificationClick={() => setActiveActionModal('Notifikasi')} />
+        <HomeHeader
+          onNotificationClick={() => setShowNotificationDrawer(true)}
+          hasUnread={hasUnreadNotifications}
+        />
 
         <main className="flex-1 px-4 pt-4 pb-28 flex flex-col gap-4">
           <SearchBar
@@ -280,9 +317,20 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onSelectType={(type) => onNavigateToLapor?.(type)}
         />
 
-        <ActionModal
-          title={activeActionModal}
-          onClose={() => setActiveActionModal(null)}
+        {/* Drawer Notifikasi */}
+        <NotificationDrawer
+          isOpen={showNotificationDrawer}
+          onClose={() => setShowNotificationDrawer(false)}
+          notifications={notifications}
+          onMarkAllAsRead={() => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })))}
+          onSelectNotification={(item) => {
+            setNotifications((p) =>
+              p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
+            )
+            setShowNotificationDrawer(false)
+            if (item.actionTarget === 'aimatch') setShowAiMatchModal(true)
+            if (item.actionTarget === 'claim') setShowCekKlaimModal(true)
+          }}
         />
 
         {/* Modal Detail Barang Temuan */}

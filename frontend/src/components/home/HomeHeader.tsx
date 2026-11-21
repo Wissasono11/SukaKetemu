@@ -3,9 +3,13 @@ import { Bell } from 'lucide-react'
 
 interface HomeHeaderProps {
   onNotificationClick: () => void
+  hasUnread?: boolean
 }
 
-export const HomeHeader: React.FC<HomeHeaderProps> = ({ onNotificationClick }) => {
+export const HomeHeader: React.FC<HomeHeaderProps> = ({
+  onNotificationClick,
+  hasUnread = false,
+}) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 py-3 transition-all text-left">
       <div className="flex items-center justify-between">
@@ -33,7 +37,9 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({ onNotificationClick }) =
           className="relative w-9 h-9 flex items-center justify-center rounded-full text-[#44574B] hover:bg-slate-100 hover:text-[#14261B] active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38] flex-shrink-0"
         >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#B3261E] ring-2 ring-white" />
+          {hasUnread && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#B3261E] ring-2 ring-white" />
+          )}
         </button>
       </div>
     </header>
