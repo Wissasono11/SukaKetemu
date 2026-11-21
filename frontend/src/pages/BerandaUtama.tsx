@@ -9,6 +9,7 @@ import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
 import { CategoryChips } from '../components/home/CategoryChips'
 import { ItemCard } from '../components/home/ItemCard'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
+import { ScanQrModal } from '../components/home/ScanQrModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { ActionModal } from '../components/home/ActionModal'
@@ -24,6 +25,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [activeActionModal, setActiveActionModal] = useState<string | null>(null)
   const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
   const [showQuickReportSheet, setShowQuickReportSheet] = useState(false)
+  const [showScanQrModal, setShowScanQrModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
 
   const filteredItems = useMemo(() => {
@@ -42,6 +44,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
       if (onNavigateToLapor) onNavigateToLapor('lost')
     } else if (title === 'Lapor Barang Temuan') {
       if (onNavigateToLapor) onNavigateToLapor('found')
+    } else if (title === 'Scan QR Pos Satpam') {
+      setShowScanQrModal(true)
     } else {
       setActiveActionModal(title)
     }
@@ -233,6 +237,21 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         <ItemDetailModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+        />
+
+        {/* Modal Scanner QR Pos Satpam */}
+        <ScanQrModal
+          isOpen={showScanQrModal}
+          onClose={() => setShowScanQrModal(false)}
+          onTitipBarang={() => onNavigateToLapor?.('found')}
+          onFilterByPos={(posName) => {
+            const query = posName.includes('Lobby')
+              ? 'Pos Utama'
+              : posName.includes('Barat')
+              ? 'Gerbang Barat'
+              : 'Lab Terpadu'
+            setSearchQuery(query)
+          }}
         />
       </div>
     </div>
