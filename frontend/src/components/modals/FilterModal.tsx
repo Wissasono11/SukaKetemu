@@ -58,12 +58,12 @@ const renderCategoryIcon = (category: ItemCategory, className: string) => {
   }
 }
 
-const DATE_OPTIONS: { id: DateRangeOption; label: string; sub: string }[] = [
-  { id: 'all', label: 'Semua Waktu', sub: 'Semua laporan' },
-  { id: 'today', label: 'Hari Ini', sub: '< 24 Jam' },
-  { id: '3days', label: '3 Hari', sub: 'Terakhir' },
-  { id: '7days', label: '7 Hari', sub: '1 Minggu' },
-  { id: '30days', label: '30 Hari', sub: '1 Bulan' },
+const DATE_OPTIONS: { id: DateRangeOption; label: string }[] = [
+  { id: 'all', label: 'Semua' },
+  { id: 'today', label: 'Hari Ini' },
+  { id: '3days', label: '3 Hari' },
+  { id: '7days', label: '7 Hari' },
+  { id: '30days', label: '30 Hari' },
 ]
 
 export const FilterModal: React.FC<FilterModalProps> = ({
@@ -347,7 +347,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 Waktu Pelaporan
               </label>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-5 gap-1 bg-slate-100 p-1 rounded-xl text-center">
               {DATE_OPTIONS.map((opt) => {
                 const isSelected = temp.dateRange === opt.id
                 return (
@@ -355,14 +355,13 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => setTemp((prev) => ({ ...prev, dateRange: opt.id }))}
-                    className={`p-2 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${
+                    className={`py-2 rounded-lg text-xs font-semibold transition-all truncate ${
                       isSelected
-                        ? 'border-[#155E38] bg-[#E4F1E8] text-[#0F4A2C] font-bold shadow-2xs'
-                        : 'border-slate-200 bg-white text-[#44574B] hover:bg-slate-50'
+                        ? 'bg-white text-[#0F4A2C] shadow-xs font-bold'
+                        : 'text-[#44574B] hover:text-[#14261B]'
                     }`}
                   >
-                    <span className="text-xs">{opt.label}</span>
-                    <span className="text-[9px] opacity-75">{opt.sub}</span>
+                    {opt.label}
                   </button>
                 )
               })}
