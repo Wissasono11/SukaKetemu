@@ -24,3 +24,14 @@ export interface LostFoundItem {
   isPrivacySensitive?: boolean
   privacyReason?: string
 }
+
+export interface PosSatpamInfo {
+  id: string
+  name: string
+  code: string
+  location: string
+  officer: string
+  shift: string
+  storedItemsCount: number
+  operatingHours: string
+}

@@ -1,4 +1,4 @@
-import type { LostFoundItem, ItemCategory } from '../types/lostFound'
+import type { LostFoundItem, ItemCategory, PosSatpamInfo } from '../types/lostFound'
 
 export const INITIAL_ITEMS: LostFoundItem[] = [
   {
@@ -73,4 +73,37 @@ export const CATEGORIES: { id: ItemCategory; label: string }[] = [
   { id: 'tas', label: 'Tas/Dompet' },
   { id: 'ibadah', label: 'Perlengkapan Ibadah' },
   { id: 'lainnya', label: 'Lainnya' },
+]
+
+export const POS_SATPAM_LIST: PosSatpamInfo[] = [
+  {
+    id: 'pos-fst-lobby',
+    name: 'Pos Satpam Utama Lobby FST',
+    code: 'QR-FST-01',
+    location: 'Lantai 1, Lobby Fakultas Sains & Teknologi',
+    officer: 'Bpk. Agus Santoso',
+    shift: 'Shift Pagi (07.00 - 15.00 WIB)',
+    storedItemsCount: 6,
+    operatingHours: '07.00 - 21.00 WIB',
+  },
+  {
+    id: 'pos-gerbang-barat',
+    name: 'Pos Satpam Gerbang Barat',
+    code: 'QR-FST-02',
+    location: 'Gerbang Masuk Barat UIN Sunan Kalijaga',
+    officer: 'Bpk. Bambang Triyono',
+    shift: 'Shift Siang (14.00 - 22.00 WIB)',
+    storedItemsCount: 2,
+    operatingHours: '24 Jam Operasional',
+  },
+  {
+    id: 'pos-lab-terpadu',
+    name: 'Pos Satpam Gedung Lab Terpadu',
+    code: 'QR-FST-03',
+    location: 'Selasar Barat Lab Sains & Komputer',
+    officer: 'Bpk. Hendra Saputra',
+    shift: 'Shift Pagi (07.00 - 15.00 WIB)',
+    storedItemsCount: 4,
+    operatingHours: '07.30 - 18.00 WIB',
+  },
 ]

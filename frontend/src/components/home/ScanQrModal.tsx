@@ -12,50 +12,8 @@ import {
   Camera,
   CheckCircle2,
 } from 'lucide-react'
-
-export interface PosSatpamInfo {
-  id: string
-  name: string
-  code: string
-  location: string
-  officer: string
-  shift: string
-  storedItemsCount: number
-  operatingHours: string
-}
-
-export const POS_SATPAM_LIST: PosSatpamInfo[] = [
-  {
-    id: 'pos-fst-lobby',
-    name: 'Pos Satpam Utama Lobby FST',
-    code: 'QR-FST-01',
-    location: 'Lantai 1, Lobby Fakultas Sains & Teknologi',
-    officer: 'Bpk. Agus Santoso',
-    shift: 'Shift Pagi (07.00 - 15.00 WIB)',
-    storedItemsCount: 6,
-    operatingHours: '07.00 - 21.00 WIB',
-  },
-  {
-    id: 'pos-gerbang-barat',
-    name: 'Pos Satpam Gerbang Barat',
-    code: 'QR-FST-02',
-    location: 'Gerbang Masuk Barat UIN Sunan Kalijaga',
-    officer: 'Bpk. Bambang Triyono',
-    shift: 'Shift Siang (14.00 - 22.00 WIB)',
-    storedItemsCount: 2,
-    operatingHours: '24 Jam Operasional',
-  },
-  {
-    id: 'pos-lab-terpadu',
-    name: 'Pos Satpam Gedung Lab Terpadu',
-    code: 'QR-FST-03',
-    location: 'Selasar Barat Lab Sains & Komputer',
-    officer: 'Bpk. Hendra Saputra',
-    shift: 'Shift Pagi (07.00 - 15.00 WIB)',
-    storedItemsCount: 4,
-    operatingHours: '07.30 - 18.00 WIB',
-  },
-]
+import type { PosSatpamInfo } from '../../types/lostFound'
+import { POS_SATPAM_LIST } from '../../data/mockItems'
 
 interface ScanQrModalProps {
   isOpen: boolean
@@ -281,9 +239,6 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                     <span>Serahkan Barang ke Pos Ini</span>
                     <ArrowRight className="w-4 h-4" />
                   </div>
-                  <span className="text-[10px] font-normal text-[#E4F1E8]">
-                    Tanda terima digital resmi • Bebas tanggung jawab
-                  </span>
                 </button>
 
                 <div className="flex items-center gap-2">
