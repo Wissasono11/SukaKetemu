@@ -97,7 +97,7 @@ export const INITIAL_ITEMS: LostFoundItem[] = [
     title: 'Flashdisk Kingston 64GB',
     category: 'elektronik',
     categoryLabel: 'Elektronik',
-    imageUrl: 'https://images.unsplash.com/photo-1618755736856-1262d29b2e7a?q=80&w=600&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1477949331575-2763034b5fb5?q=80&w=600&auto=format&fit=crop',
     imageAlt: 'Flashdisk USB metal perak di meja lab komputer',
     custody: 'pos_satpam',
     posId: 'pos-lab-terpadu',

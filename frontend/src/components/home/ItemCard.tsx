@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Headphones,
   FileText,
@@ -19,6 +19,7 @@ interface ItemCardProps {
 }
 
 export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
+  const [imgError, setImgError] = useState(false)
   const isPosSatpam = item.custody === 'pos_satpam'
 
   return (
@@ -35,14 +36,22 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
       className="flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.04)] hover:shadow-md hover:border-[#155E38]/30 transition-all group cursor-pointer active:scale-[0.99] text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38]"
     >
       <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden">
-        <img
-          src={item.imageUrl}
-          alt={item.imageAlt}
-          loading="lazy"
-          className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-            item.isPrivacySensitive ? 'blur-md scale-110' : ''
-          }`}
-        />
+        {imgError ? (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-2 text-center">
+            <Shapes className="w-8 h-8 opacity-30 mb-1" />
+            <span className="text-[10px] text-slate-400 font-medium">Foto Barang</span>
+          </div>
+        ) : (
+          <img
+            src={item.imageUrl}
+            alt={item.imageAlt}
+            loading="lazy"
+            onError={() => setImgError(true)}
+            className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+              item.isPrivacySensitive ? 'blur-md scale-110' : ''
+            }`}
+          />
+        )}
 
         <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-md shadow-xs">
           {item.category === 'elektronik' && <Headphones className="w-3 h-3 text-[#44574B]" />}
