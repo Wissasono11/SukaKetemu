@@ -5,9 +5,15 @@ interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   onFilterClick: () => void
+  activeFilterCount?: number
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onFilterClick }) => {
+export const SearchBar: React.FC<SearchBarProps> = ({
+  value,
+  onChange,
+  onFilterClick,
+  activeFilterCount = 0,
+}) => {
   return (
     <section aria-label="Pencarian Barang" className="w-full">
       <div className="relative flex items-center bg-white rounded-2xl p-1.5 shadow-[0_2px_10px_rgba(20,38,27,0.04)] border border-slate-100 focus-within:border-[#155E38] focus-within:ring-2 focus-within:ring-[#155E38]/20 transition-all">
@@ -35,10 +41,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, onFilterC
         <button
           type="button"
           onClick={onFilterClick}
-          aria-label="Filter berdasarkan kategori atau gedung"
-          className="flex items-center justify-center w-9 h-9 rounded-xl bg-[#155E38] text-white hover:bg-[#0F4A2C] active:scale-95 transition-all shadow-sm flex-shrink-0"
+          aria-label={
+            activeFilterCount > 0
+              ? `Filter lanjutan (${activeFilterCount} filter aktif)`
+              : 'Filter berdasarkan kategori, pos satpam, atau tanggal'
+          }
+          className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-[#155E38] text-white hover:bg-[#0F4A2C] active:scale-95 transition-all shadow-sm flex-shrink-0"
         >
           <SlidersHorizontal className="w-4 h-4 text-white" />
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#C59B27] text-white text-[9px] font-extrabold flex items-center justify-center ring-2 ring-white shadow-xs animate-in zoom-in-75">
+              {activeFilterCount}
+            </span>
+          )}
         </button>
       </div>
     </section>

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { ChevronRight, Search, FileSearch, Camera, X } from 'lucide-react'
-import type { ItemCategory, LostFoundItem } from '../types/lostFound'
-import { INITIAL_ITEMS } from '../data/mockItems'
+import type { ItemCategory, LostFoundItem, FilterCriteria } from '../types/lostFound'
+import { INITIAL_ITEMS, CATEGORIES, POS_SATPAM_LIST } from '../data/mockItems'
+import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
 import { QuickActions } from '../components/home/QuickActions'
@@ -15,13 +16,14 @@ import { ActionModal } from '../components/modals/ActionModal'
 import { ScanQrModal } from '../components/modals/ScanQrModal'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { AiMatchModal } from '../components/modals/AiMatchModal'
+import { FilterModal } from '../components/modals/FilterModal'
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
 }
 
 export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor }) => {
-  const [selectedCategory, setSelectedCategory] = useState<ItemCategory>('all')
+  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>(DEFAULT_FILTER_CRITERIA)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<TabId>('beranda')
   const [activeActionModal, setActiveActionModal] = useState<string | null>(null)
@@ -30,18 +32,108 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [showScanQrModal, setShowScanQrModal] = useState(false)
   const [showCekKlaimModal, setShowCekKlaimModal] = useState(false)
   const [showAiMatchModal, setShowAiMatchModal] = useState(false)
+  const [showFilterModal, setShowFilterModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
+
+  const selectedCategory = filterCriteria.category
+  const handleSelectCategory = (cat: ItemCategory) => {
+    setFilterCriteria((prev) => ({ ...prev, category: cat }))
+  }
+
+  const activePosLabel = useMemo(() => {
+    if (filterCriteria.posId === 'all') return null
+    if (filterCriteria.posId === 'dibawa_penemu') return 'Dibawa Penemu'
+    const p = POS_SATPAM_LIST.find((pos) => pos.id === filterCriteria.posId)
+    return p ? p.name.replace('Pos Satpam ', '') : filterCriteria.posId
+  }, [filterCriteria.posId])
+
+  const activeDateLabel = useMemo(() => {
+    switch (filterCriteria.dateRange) {
+      case 'today':
+        return 'Hari Ini (<24 Jam)'
+      case '3days':
+        return '3 Hari Terakhir'
+      case '7days':
+        return '7 Hari Terakhir'
+      case '30days':
+        return '30 Hari Terakhir'
+      default:
+        return null
+    }
+  }, [filterCriteria.dateRange])
+
+  const activeCustodyLabel = useMemo(() => {
+    if (filterCriteria.custody === 'pos_satpam') return 'Di Pos Satpam'
+    if (filterCriteria.custody === 'dibawa_penemu') return 'Di Penemu'
+    return null
+  }, [filterCriteria.custody])
+
+  const activeCategoryLabel = useMemo(() => {
+    if (filterCriteria.category === 'all') return null
+    const c = CATEGORIES.find((cat) => cat.id === filterCriteria.category)
+    return c ? c.label : filterCriteria.category
+  }, [filterCriteria.category])
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (filterCriteria.category !== 'all') count++
+    if (filterCriteria.posId !== 'all') count++
+    if (filterCriteria.custody !== 'all') count++
+    if (filterCriteria.dateRange !== 'all') count++
+    return count
+  }, [filterCriteria])
 
   const filteredItems = useMemo(() => {
     return INITIAL_ITEMS.filter((item) => {
-      const matchCategory = selectedCategory === 'all' || item.category === selectedCategory
-      const matchSearch =
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.locationDetail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase())
-      return matchCategory && matchSearch
+      // 1. Text Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase()
+        const matchSearch =
+          item.title.toLowerCase().includes(q) ||
+          item.locationDetail.toLowerCase().includes(q) ||
+          item.categoryLabel.toLowerCase().includes(q)
+        if (!matchSearch) return false
+      }
+
+      // 2. Kategori
+      if (filterCriteria.category !== 'all' && item.category !== filterCriteria.category) {
+        return false
+      }
+
+      // 3. Custody Status
+      if (filterCriteria.custody !== 'all' && item.custody !== filterCriteria.custody) {
+        return false
+      }
+
+      // 4. Pos Satpam / Lokasi
+      if (filterCriteria.posId !== 'all') {
+        if (filterCriteria.posId === 'dibawa_penemu') {
+          if (item.custody !== 'dibawa_penemu') return false
+        } else if (item.posId !== filterCriteria.posId) {
+          return false
+        }
+      }
+
+      // 5. Rentang Waktu (Reference date: 2026-11-21T19:39:00Z)
+      if (filterCriteria.dateRange !== 'all' && item.reportedDate) {
+        const itemTime = new Date(item.reportedDate).getTime()
+        const now = new Date('2026-11-21T19:39:00').getTime()
+        const diffHours = (now - itemTime) / (1000 * 60 * 60)
+
+        if (filterCriteria.dateRange === 'today' && diffHours > 24) return false
+        if (filterCriteria.dateRange === '3days' && diffHours > 72) return false
+        if (filterCriteria.dateRange === '7days' && diffHours > 168) return false
+        if (filterCriteria.dateRange === '30days' && diffHours > 720) return false
+      }
+
+      return true
     })
-  }, [selectedCategory, searchQuery])
+  }, [filterCriteria, searchQuery])
+
+  const handleResetFilters = () => {
+    setFilterCriteria(DEFAULT_FILTER_CRITERIA)
+    setSearchQuery('')
+  }
 
   const handleActionClick = (title: string) => {
     if (title === 'Lapor Barang Hilang') {
@@ -68,7 +160,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            onFilterClick={() => setActiveActionModal('Filter Lanjutan')}
+            onFilterClick={() => setShowFilterModal(true)}
+            activeFilterCount={activeFilterCount}
           />
 
           <QuickActions onActionClick={handleActionClick} />
@@ -79,7 +172,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
           <CategoryChips
             selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+            onSelectCategory={handleSelectCategory}
             totalCount={filteredItems.length}
           />
 
@@ -89,10 +182,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               <h3 className="text-sm font-bold text-[#14261B]">Barang Temuan Terbaru</h3>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedCategory('all')
-                  setSearchQuery('')
-                }}
+                onClick={handleResetFilters}
                 className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] flex items-center gap-0.5"
               >
                 Lihat Semua ({INITIAL_ITEMS.length})
@@ -101,27 +191,93 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
             </div>
 
             {/* Feedback Status Filter / Pencarian Aktif */}
-            {(searchQuery.trim() !== '' || selectedCategory !== 'all') && (
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-100/90 border border-slate-200/60 text-xs text-[#14261B]">
-                <span className="truncate mr-2">
-                  Menampilkan <strong>{filteredItems.length}</strong> barang
+            {(searchQuery.trim() !== '' || activeFilterCount > 0) && (
+              <div className="flex flex-col gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs text-xs text-[#14261B] text-left">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-[#44574B]">
+                    Menemukan <strong>{filteredItems.length}</strong> barang
+                    {searchQuery.trim() && <> untuk "<strong>{searchQuery}</strong>"</>}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="text-[11px] font-bold text-[#155E38] hover:text-[#0F4A2C]"
+                  >
+                    Reset Semua
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
                   {searchQuery.trim() && (
-                    <> untuk "<strong>{searchQuery}</strong>"</>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-[#14261B] text-[10px] font-medium border border-slate-200">
+                      Kata kunci: "{searchQuery}"
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="hover:text-red-600 ml-0.5"
+                        aria-label="Hapus filter kata kunci"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
                   )}
-                  {selectedCategory !== 'all' && (
-                    <span className="text-[#44574B]"> (kategori: {selectedCategory})</span>
+
+                  {activeCategoryLabel && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
+                      {activeCategoryLabel}
+                      <button
+                        type="button"
+                        onClick={() => setFilterCriteria((p) => ({ ...p, category: 'all' }))}
+                        className="hover:text-red-700 ml-0.5"
+                        aria-label="Hapus filter kategori"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
                   )}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery('')
-                    setSelectedCategory('all')
-                  }}
-                  className="text-xs font-bold text-[#155E38] hover:text-[#0F4A2C] whitespace-nowrap"
-                >
-                  Reset
-                </button>
+
+                  {activePosLabel && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
+                      Pos: {activePosLabel}
+                      <button
+                        type="button"
+                        onClick={() => setFilterCriteria((p) => ({ ...p, posId: 'all' }))}
+                        className="hover:text-red-700 ml-0.5"
+                        aria-label="Hapus filter pos"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+
+                  {activeCustodyLabel && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
+                      {activeCustodyLabel}
+                      <button
+                        type="button"
+                        onClick={() => setFilterCriteria((p) => ({ ...p, custody: 'all' }))}
+                        className="hover:text-red-700 ml-0.5"
+                        aria-label="Hapus filter status fisik"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+
+                  {activeDateLabel && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
+                      Waktu: {activeDateLabel}
+                      <button
+                        type="button"
+                        onClick={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
+                        className="hover:text-red-700 ml-0.5"
+                        aria-label="Hapus filter waktu"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -132,14 +288,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
                 </div>
                 <p className="text-sm font-semibold text-[#14261B]">Tidak ada barang ditemukan</p>
                 <p className="text-xs text-[#44574B] mt-1 max-w-xs">
-                  Coba kata kunci lain atau pilih kategori "Semua" untuk melihat daftar lengkap.
+                  Coba kata kunci lain atau reset filter untuk melihat daftar lengkap.
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    setSelectedCategory('all')
-                    setSearchQuery('')
-                  }}
+                  onClick={handleResetFilters}
                   className="mt-4 px-4 py-1.5 rounded-full bg-[#155E38] text-white text-xs font-medium hover:bg-[#0F4A2C]"
                 >
                   Reset Filter
@@ -258,12 +411,14 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onClose={() => setShowScanQrModal(false)}
           onTitipBarang={() => onNavigateToLapor?.('found')}
           onFilterByPos={(posName) => {
-            const query = posName.includes('Lobby')
-              ? 'Pos Utama'
-              : posName.includes('Barat')
-              ? 'Gerbang Barat'
-              : 'Lab Terpadu'
-            setSearchQuery(query)
+            const matchedPos = POS_SATPAM_LIST.find(
+              (p) => posName.includes(p.code) || posName.includes(p.name)
+            )
+            if (matchedPos) {
+              setFilterCriteria((prev) => ({ ...prev, posId: matchedPos.id }))
+            } else {
+              setSearchQuery(posName)
+            }
           }}
         />
 
@@ -272,12 +427,14 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           isOpen={showCekKlaimModal}
           onClose={() => setShowCekKlaimModal(false)}
           onNavigateToPos={(posName) => {
-            const query = posName.includes('Lobby')
-              ? 'Pos Utama'
-              : posName.includes('Barat')
-              ? 'Gerbang Barat'
-              : 'Lab Terpadu'
-            setSearchQuery(query)
+            const matchedPos = POS_SATPAM_LIST.find(
+              (p) => posName.includes(p.code) || posName.includes(p.name)
+            )
+            if (matchedPos) {
+              setFilterCriteria((prev) => ({ ...prev, posId: matchedPos.id }))
+            } else {
+              setSearchQuery(posName)
+            }
           }}
         />
 
@@ -288,6 +445,16 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onClaimSuccess={() => {
             setShowCekKlaimModal(true)
           }}
+        />
+
+        {/* Modal Filter Lanjutan */}
+        <FilterModal
+          isOpen={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          currentCriteria={filterCriteria}
+          onApply={(newCriteria) => setFilterCriteria(newCriteria)}
+          onReset={() => setFilterCriteria(DEFAULT_FILTER_CRITERIA)}
+          searchQuery={searchQuery}
         />
       </div>
     </div>

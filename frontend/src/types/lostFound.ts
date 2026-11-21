@@ -19,10 +19,28 @@ export interface LostFoundItem {
   imageUrl: string
   imageAlt: string
   custody: CustodyStatus
+  posId?: string
   locationDetail: string
   timeAgo?: string
+  reportedDate?: string
   isPrivacySensitive?: boolean
   privacyReason?: string
+}
+
+export type DateRangeOption = 'all' | 'today' | '3days' | '7days' | '30days'
+
+export interface FilterCriteria {
+  category: ItemCategory
+  posId: string // 'all' | 'pos-fst-lobby' | 'pos-gerbang-barat' | 'pos-lab-terpadu' | 'dibawa_penemu'
+  custody: 'all' | 'pos_satpam' | 'dibawa_penemu'
+  dateRange: DateRangeOption
+}
+
+export const DEFAULT_FILTER_CRITERIA: FilterCriteria = {
+  category: 'all',
+  posId: 'all',
+  custody: 'all',
+  dateRange: 'all',
 }
 
 export interface PosSatpamInfo {
