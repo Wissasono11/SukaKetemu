@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import type {
   FilterCriteria,
-  ItemCategory,
   DateRangeOption,
 } from '../../types/lostFound'
 import {
@@ -37,25 +36,14 @@ interface FilterModalProps {
   searchQuery?: string
 }
 
-const renderCategoryIcon = (category: ItemCategory, className: string) => {
-  switch (category) {
-    case 'all':
-      return <LayoutGrid className={className} />
-    case 'elektronik':
-      return <Headphones className={className} />
-    case 'dokumen':
-      return <FileText className={className} />
-    case 'botol':
-      return <CupSoda className={className} />
-    case 'tas':
-      return <Briefcase className={className} />
-    case 'ibadah':
-      return <Layers className={className} />
-    case 'lainnya':
-      return <Shapes className={className} />
-    default:
-      return null
-  }
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  all: LayoutGrid,
+  elektronik: Headphones,
+  dokumen: FileText,
+  botol: CupSoda,
+  tas: Briefcase,
+  ibadah: Layers,
+  lainnya: Shapes,
 }
 
 const DATE_OPTIONS: { id: DateRangeOption; label: string }[] = [
@@ -64,6 +52,12 @@ const DATE_OPTIONS: { id: DateRangeOption; label: string }[] = [
   { id: '3days', label: '3 Hari' },
   { id: '7days', label: '7 Hari' },
   { id: '30days', label: '30 Hari' },
+]
+
+const CUSTODY_OPTIONS: { id: FilterCriteria['custody']; label: string; icon?: React.ElementType }[] = [
+  { id: 'all', label: 'Semua' },
+  { id: 'pos_satpam', label: 'Di Pos', icon: Shield },
+  { id: 'dibawa_penemu', label: 'Di Penemu', icon: User },
 ]
 
 export const FilterModal: React.FC<FilterModalProps> = ({
@@ -76,33 +70,30 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [temp, setTemp] = useState<FilterCriteria>(currentCriteria)
 
-  // Sinkronisasi saat modal dibuka
   useEffect(() => {
-    if (isOpen) {
-      setTemp(currentCriteria)
-    }
+    if (isOpen) setTemp(currentCriteria)
   }, [isOpen, currentCriteria])
 
-  // Hitung jumlah filter yang sedang aktif dari default
-  const activeCount = useMemo(() => {
-    let count = 0
-    if (temp.category !== 'all') count++
-    if (temp.posId !== 'all') count++
-    if (temp.custody !== 'all') count++
-    if (temp.dateRange !== 'all') count++
-    return count
-  }, [temp])
+  const activeCount = [temp.category, temp.posId, temp.custody, temp.dateRange].filter(
+    (v) => v !== 'all'
+  ).length
 
-  // Menghitung preview jumlah barang yang cocok secara real-time
   const previewMatches = useMemo(() => {
     return filterLostFoundItems(INITIAL_ITEMS, temp, searchQuery)
   }, [temp, searchQuery])
 
   if (!isOpen) return null
 
-  const handleResetInternal = () => {
-    setTemp(DEFAULT_FILTER_CRITERIA)
-  }
+  const storageOptions = [
+    { id: 'all', name: 'Semua Titik Penyimpanan', detail: 'Semua pos satpam & penemu', icon: LayoutGrid },
+    ...POS_SATPAM_LIST.map((pos) => ({
+      id: pos.id,
+      name: pos.name,
+      detail: `${pos.code} • ${pos.location.split(',')[0]}`,
+      icon: Shield,
+    })),
+    { id: 'dibawa_penemu', name: 'Masih Dibawa Penemu', detail: 'Belum diserahkan ke pos satpam', icon: User },
+  ]
 
   const handleApply = () => {
     onApply(temp)
@@ -139,7 +130,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             {activeCount > 0 && (
               <button
                 type="button"
-                onClick={handleResetInternal}
+                onClick={() => setTemp(DEFAULT_FILTER_CRITERIA)}
                 className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] px-2 py-1 rounded-md transition-colors flex items-center gap-1"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -161,12 +152,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 text-left">
           {/* Section 1: Kategori Barang */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-[#14261B]">
-              Kategori Barang
-            </label>
+            <label className="text-xs font-bold text-[#14261B]">Kategori Barang</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
                 const isSelected = temp.category === cat.id
+                const CatIcon = CATEGORY_ICONS[cat.id] || LayoutGrid
                 return (
                   <button
                     key={cat.id}
@@ -178,10 +168,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         : 'bg-white text-[#44574B] border-slate-200 hover:bg-slate-50'
                     }`}
                   >
-                    {renderCategoryIcon(
-                      cat.id,
-                      `w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-[#155E38]'}`
-                    )}
+                    <CatIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-[#155E38]'}`} />
                     <span className="truncate">{cat.label}</span>
                   </button>
                 )
@@ -192,49 +179,19 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           {/* Section 2: Pos Satpam / Tempat Penyimpanan */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#14261B]">
-                Pos Satpam &amp; Penyimpanan
-              </label>
+              <label className="text-xs font-bold text-[#14261B]">Pos Satpam &amp; Penyimpanan</label>
               <span className="text-[10px] text-[#44574B]">Kampus FST UIN</span>
             </div>
 
             <div className="flex flex-col gap-2">
-              {/* Option: Semua Lokasi */}
-              <button
-                type="button"
-                onClick={() => setTemp((prev) => ({ ...prev, posId: 'all' }))}
-                className={`p-3 rounded-xl border flex items-center justify-between transition-all text-left ${
-                  temp.posId === 'all'
-                    ? 'border-[#155E38] bg-[#E4F1E8]/40 ring-1 ring-[#155E38]'
-                    : 'border-slate-200 bg-white hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                      temp.posId === 'all'
-                        ? 'bg-[#155E38] text-white'
-                        : 'bg-slate-100 text-slate-500'
-                    }`}
-                  >
-                    <LayoutGrid className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#14261B]">Semua Titik Penyimpanan</span>
-                    <span className="text-[10px] text-[#44574B]">Semua pos satpam &amp; penemu</span>
-                  </div>
-                </div>
-                {temp.posId === 'all' && <Check className="w-4 h-4 text-[#155E38]" />}
-              </button>
-
-              {/* Pos Satpam List */}
-              {POS_SATPAM_LIST.map((pos) => {
-                const isSelected = temp.posId === pos.id
+              {storageOptions.map((opt) => {
+                const isSelected = temp.posId === opt.id
+                const OptIcon = opt.icon
                 return (
                   <button
-                    key={pos.id}
+                    key={opt.id}
                     type="button"
-                    onClick={() => setTemp((prev) => ({ ...prev, posId: pos.id }))}
+                    onClick={() => setTemp((prev) => ({ ...prev, posId: opt.id }))}
                     className={`p-3 rounded-xl border flex items-center justify-between transition-all text-left ${
                       isSelected
                         ? 'border-[#155E38] bg-[#E4F1E8]/40 ring-1 ring-[#155E38]'
@@ -244,108 +201,54 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     <div className="flex items-center gap-2.5">
                       <div
                         className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                          isSelected
-                            ? 'bg-[#155E38] text-white'
-                            : 'bg-slate-100 text-slate-500'
+                          isSelected ? 'bg-[#155E38] text-white' : 'bg-slate-100 text-slate-500'
                         }`}
                       >
-                        <Shield className="w-3.5 h-3.5" />
+                        <OptIcon className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs font-bold text-[#14261B]">{pos.name}</span>
-                        <span className="text-[10px] text-[#44574B]">
-                          {pos.code} • {pos.location.split(',')[0]}
-                        </span>
+                        <span className="text-xs font-bold text-[#14261B]">{opt.name}</span>
+                        <span className="text-[10px] text-[#44574B]">{opt.detail}</span>
                       </div>
                     </div>
                     {isSelected && <Check className="w-4 h-4 text-[#155E38]" />}
                   </button>
                 )
               })}
+            </div>
+          </div>
 
-              {/* Option: Masih Dibawa Penemu */}
-              <button
-                type="button"
-                onClick={() => setTemp((prev) => ({ ...prev, posId: 'dibawa_penemu' }))}
-                className={`p-3 rounded-xl border flex items-center justify-between transition-all text-left ${
-                  temp.posId === 'dibawa_penemu'
-                    ? 'border-[#155E38] bg-[#E4F1E8]/40 ring-1 ring-[#155E38]'
-                    : 'border-slate-200 bg-white hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                      temp.posId === 'dibawa_penemu'
-                        ? 'bg-[#155E38] text-white'
-                        : 'bg-slate-100 text-slate-500'
+          {/* Section 3: Status Pengamanan */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-[#14261B]">Status Fisik Barang</label>
+            <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-xl">
+              {CUSTODY_OPTIONS.map((opt) => {
+                const isSelected = temp.custody === opt.id
+                const CustodyIcon = opt.icon
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTemp((prev) => ({ ...prev, custody: opt.id }))}
+                    className={`py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
+                      isSelected
+                        ? 'bg-white text-[#0F4A2C] shadow-xs font-bold'
+                        : 'text-[#44574B] hover:text-[#14261B]'
                     }`}
                   >
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#14261B]">Masih Dibawa Penemu</span>
-                    <span className="text-[10px] text-[#44574B]">
-                      Belum diserahkan ke pos satpam
-                    </span>
-                  </div>
-                </div>
-                {temp.posId === 'dibawa_penemu' && <Check className="w-4 h-4 text-[#155E38]" />}
-              </button>
+                    {CustodyIcon && <CustodyIcon className="w-3 h-3 text-[#155E38]" />}
+                    {opt.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Section 3: Status Pengamanan (Custody Filter) */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-[#14261B]">
-              Status Fisik Barang
-            </label>
-            <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-xl">
-              <button
-                type="button"
-                onClick={() => setTemp((prev) => ({ ...prev, custody: 'all' }))}
-                className={`py-2 rounded-lg text-xs font-semibold transition-all ${
-                  temp.custody === 'all'
-                    ? 'bg-white text-[#14261B] shadow-xs'
-                    : 'text-[#44574B] hover:text-[#14261B]'
-                }`}
-              >
-                Semua
-              </button>
-              <button
-                type="button"
-                onClick={() => setTemp((prev) => ({ ...prev, custody: 'pos_satpam' }))}
-                className={`py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  temp.custody === 'pos_satpam'
-                    ? 'bg-white text-[#0F4A2C] shadow-xs font-bold'
-                    : 'text-[#44574B] hover:text-[#14261B]'
-                }`}
-              >
-                <Shield className="w-3 h-3 text-[#155E38]" />
-                Di Pos
-              </button>
-              <button
-                type="button"
-                onClick={() => setTemp((prev) => ({ ...prev, custody: 'dibawa_penemu' }))}
-                className={`py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  temp.custody === 'dibawa_penemu'
-                    ? 'bg-white text-[#14261B] shadow-xs font-bold'
-                    : 'text-[#44574B] hover:text-[#14261B]'
-                }`}
-              >
-                <User className="w-3 h-3 text-slate-500" />
-                Di Penemu
-              </button>
-            </div>
-          </div>
-
-          {/* Section 4: Rentang Waktu Temuan */}
+          {/* Section 4: Rentang Waktu */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-[#155E38]" />
-              <label className="text-xs font-bold text-[#14261B]">
-                Waktu Pelaporan
-              </label>
+              <label className="text-xs font-bold text-[#14261B]">Waktu Pelaporan</label>
             </div>
             <div className="grid grid-cols-5 gap-1 bg-slate-100 p-1 rounded-xl text-center">
               {DATE_OPTIONS.map((opt) => {
@@ -374,7 +277,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           <button
             type="button"
             onClick={() => {
-              handleResetInternal()
+              setTemp(DEFAULT_FILTER_CRITERIA)
               onReset()
               onClose()
             }}
