@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   X,
   ScanSearch,
   CheckCircle2,
   FileCheck,
   Radar,
+  RefreshCw,
 } from 'lucide-react'
 import type { AiMatchItem } from '../../types/lostFound'
 import { INITIAL_AI_MATCHES } from '../../data/mockItems'
@@ -27,8 +28,26 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
     INITIAL_AI_MATCHES[0]?.id || ''
   )
   const [claimedItem, setClaimedItem] = useState<AiMatchItem | null>(null)
+  const [isScanning, setIsScanning] = useState(true)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsScanning(true)
+      const timer = setTimeout(() => {
+        setIsScanning(false)
+      }, 750)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
+
+  const handleRescan = () => {
+    setIsScanning(true)
+    setTimeout(() => {
+      setIsScanning(false)
+    }, 700)
+  }
 
   const activeMatches = matches.filter((m) => m.status === 'unresolved')
   const currentHero =
@@ -72,14 +91,26 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup Radar AI"
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={isScanning}
+              onClick={handleRescan}
+              aria-label="Pindai Ulang Radar AI"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-[#155E38] transition-colors disabled:opacity-40"
+              title="Pindai Ulang Radar AI"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? 'animate-spin text-[#155E38]' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Tutup Radar AI"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {claimedItem ? (
@@ -125,8 +156,39 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
               </span>
             </div>
 
-            {currentHero ? (
-              <div className="flex flex-col gap-4">
+            {isScanning ? (
+              <div className="py-8 px-4 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#E4F1E8]/40 via-white to-slate-50 rounded-2xl border border-[#155E38]/20 animate-in fade-in duration-200">
+                {/* Radar Visualizer Animation */}
+                <div className="relative w-28 h-28 flex items-center justify-center mb-4">
+                  {/* Outer Pulsing Ring */}
+                  <div className="absolute inset-0 rounded-full border border-[#155E38]/20 animate-ping opacity-60" />
+                  {/* Middle Ring */}
+                  <div className="absolute inset-2 rounded-full border border-[#155E38]/30" />
+                  {/* Rotating Radar Beam Sweep */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-[#155E38]/10 to-[#155E38]/30 animate-spin [animation-duration:2s]" />
+                  {/* Center Radar Icon */}
+                  <div className="relative z-10 w-12 h-12 rounded-full bg-[#155E38] text-white flex items-center justify-center shadow-md">
+                    <Radar className="w-6 h-6 animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-bold border border-[#155E38]/20 mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#155E38] animate-ping" />
+                  <span>Kalkulasi Kemiripan AI Multimodal...</span>
+                </div>
+
+                <h4 className="text-sm font-bold text-[#14261B]">Memindai 24 Inventaris Pos Satpam</h4>
+                <p className="text-xs text-[#44574B] mt-1 max-w-xs leading-relaxed">
+                  Algoritma mencocokkan kemiripan visual warna, bentuk fisik, dan lokasi laporan Anda.
+                </p>
+
+                {/* Shimmer skeleton bar */}
+                <div className="w-44 h-1.5 rounded-full bg-slate-200 overflow-hidden mt-4">
+                  <div className="w-full h-full bg-[#155E38] animate-pulse" />
+                </div>
+              </div>
+            ) : currentHero ? (
+              <div className="flex flex-col gap-4 animate-in fade-in duration-200">
                 {/* Kartu Utama Hero Match */}
                 <AiMatchHeroCard
                   item={currentHero}

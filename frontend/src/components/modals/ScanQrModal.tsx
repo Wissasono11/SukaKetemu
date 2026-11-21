@@ -32,12 +32,18 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
   const [flashlightOn, setFlashlightOn] = useState(false)
   const [scannedPos, setScannedPos] = useState<PosSatpamInfo | null>(null)
   const [scanProgress, setScanProgress] = useState(false)
+  const [isCameraReady, setIsCameraReady] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       setIsScanning(true)
       setScannedPos(null)
       setScanProgress(false)
+      setIsCameraReady(false)
+      const timer = setTimeout(() => {
+        setIsCameraReady(true)
+      }, 350)
+      return () => clearTimeout(timer)
     }
   }, [isOpen])
 
@@ -108,34 +114,47 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
           /* Mode Kamera Scanner */
           <div className="flex flex-col gap-4">
             <div className="relative w-full aspect-square max-h-64 rounded-2xl bg-slate-900 overflow-hidden flex flex-col items-center justify-center border border-slate-800 shadow-inner">
-              {/* Animasi Kamera & Sudut Viewfinder */}
-              <div className="absolute inset-8 border border-white/20 rounded-xl pointer-events-none flex flex-col justify-between p-2">
-                <div className="flex justify-between">
-                  <div className="w-6 h-6 border-t-3 border-l-3 border-[#1B7A43] rounded-tl-lg" />
-                  <div className="w-6 h-6 border-t-3 border-r-3 border-[#1B7A43] rounded-tr-lg" />
+              {!isCameraReady ? (
+                <div className="flex flex-col items-center justify-center gap-2 text-center p-4 animate-pulse">
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/70">
+                    <Camera className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300">
+                    Menghubungkan Sensor Kamera PWA...
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <div className="w-6 h-6 border-b-3 border-l-3 border-[#1B7A43] rounded-bl-lg" />
-                  <div className="w-6 h-6 border-b-3 border-r-3 border-[#1B7A43] rounded-br-lg" />
-                </div>
-              </div>
+              ) : (
+                <>
+                  {/* Animasi Kamera & Sudut Viewfinder */}
+                  <div className="absolute inset-8 border border-white/20 rounded-xl pointer-events-none flex flex-col justify-between p-2">
+                    <div className="flex justify-between">
+                      <div className="w-6 h-6 border-t-3 border-l-3 border-[#1B7A43] rounded-tl-lg" />
+                      <div className="w-6 h-6 border-t-3 border-r-3 border-[#1B7A43] rounded-tr-lg" />
+                    </div>
+                    <div className="flex justify-between">
+                      <div className="w-6 h-6 border-b-3 border-l-3 border-[#1B7A43] rounded-bl-lg" />
+                      <div className="w-6 h-6 border-b-3 border-r-3 border-[#1B7A43] rounded-br-lg" />
+                    </div>
+                  </div>
 
-              {/* Garis Laser Animasi Scan */}
-              <div
-                className={`absolute left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shadow-[0_0_12px_#22C55E] ${
-                  scanProgress ? 'top-1/2 scale-110' : 'animate-pulse top-1/3'
-                }`}
-              />
+                  {/* Garis Laser Animasi Scan */}
+                  <div
+                    className={`absolute left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-[#22C55E] to-transparent shadow-[0_0_12px_#22C55E] ${
+                      scanProgress ? 'top-1/2 scale-110' : 'animate-pulse top-1/3'
+                    }`}
+                  />
 
-              {flashlightOn && (
-                <div className="absolute inset-0 bg-[#FFDF98]/15 pointer-events-none" />
+                  {flashlightOn && (
+                    <div className="absolute inset-0 bg-[#FFDF98]/15 pointer-events-none" />
+                  )}
+
+                  <p className="relative z-10 text-xs font-semibold text-white/90 text-center px-6 drop-shadow-sm">
+                    {scanProgress
+                      ? 'Memverifikasi QR Code Kampus...'
+                      : 'Arahkan kamera ke QR Code resmi di Pos Satpam'}
+                  </p>
+                </>
               )}
-
-              <p className="relative z-10 text-xs font-semibold text-white/90 text-center px-6 drop-shadow-sm">
-                {scanProgress
-                  ? 'Memverifikasi QR Code Kampus...'
-                  : 'Arahkan kamera ke QR Code resmi di Pos Satpam'}
-              </p>
             </div>
 
             {/* Simulasi Pilih Pos Satpam */}

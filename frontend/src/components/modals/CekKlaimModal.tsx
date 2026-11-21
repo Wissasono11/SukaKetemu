@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, ShieldCheck, FileCheck, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ClaimTicket } from '../../types/lostFound'
 import { INITIAL_CLAIM_TICKETS } from '../../data/mockItems'
 import { ClaimTicketCard } from './claim/ClaimTicketCard'
 import { ClaimHistoryCard } from './claim/ClaimHistoryCard'
+import { ClaimTicketSkeleton } from './claim/ClaimTicketSkeleton'
 
 interface CekKlaimModalProps {
   isOpen: boolean
@@ -20,6 +21,17 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   const [tickets, setTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
   const [cancelModalTicketId, setCancelModalTicketId] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true)
+      const timer = setTimeout(() => {
+        setIsLoading(false)
+      }, 350)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, activeTab])
 
   if (!isOpen) return null
 
@@ -123,8 +135,10 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
           </button>
         </div>
 
-        {/* Konten Tab Aktif */}
-        {activeTab === 'aktif' ? (
+        {/* Konten Tab Aktif / Riwayat dengan Skeleton State */}
+        {isLoading ? (
+          <ClaimTicketSkeleton />
+        ) : activeTab === 'aktif' ? (
           activeTickets.length === 0 ? (
             <div className="py-10 flex flex-col items-center justify-center text-center p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
               <FileCheck className="w-8 h-8 text-slate-400 mb-2" />
