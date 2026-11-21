@@ -19,12 +19,12 @@ import type {
   FilterCriteria,
   ItemCategory,
   DateRangeOption,
-  LostFoundItem,
 } from '../../types/lostFound'
 import {
   CATEGORIES,
   POS_SATPAM_LIST,
   INITIAL_ITEMS,
+  filterLostFoundItems,
 } from '../../data/mockItems'
 import { DEFAULT_FILTER_CRITERIA } from '../../types/lostFound'
 
@@ -95,50 +95,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
   // Menghitung preview jumlah barang yang cocok secara real-time
   const previewMatches = useMemo(() => {
-    return INITIAL_ITEMS.filter((item: LostFoundItem) => {
-      // 1. Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        const matchesQuery =
-          item.title.toLowerCase().includes(q) ||
-          item.locationDetail.toLowerCase().includes(q) ||
-          item.categoryLabel.toLowerCase().includes(q)
-        if (!matchesQuery) return false
-      }
-
-      // 2. Kategori
-      if (temp.category !== 'all' && item.category !== temp.category) {
-        return false
-      }
-
-      // 3. Custody Status
-      if (temp.custody !== 'all' && item.custody !== temp.custody) {
-        return false
-      }
-
-      // 4. Pos Satpam / Lokasi
-      if (temp.posId !== 'all') {
-        if (temp.posId === 'dibawa_penemu') {
-          if (item.custody !== 'dibawa_penemu') return false
-        } else if (item.posId !== temp.posId) {
-          return false
-        }
-      }
-
-      // 5. Rentang Waktu (Reference date: 2026-11-21T19:39:00Z)
-      if (temp.dateRange !== 'all' && item.reportedDate) {
-        const itemTime = new Date(item.reportedDate).getTime()
-        const now = new Date('2026-11-21T19:39:00').getTime()
-        const diffHours = (now - itemTime) / (1000 * 60 * 60)
-
-        if (temp.dateRange === 'today' && diffHours > 24) return false
-        if (temp.dateRange === '3days' && diffHours > 72) return false
-        if (temp.dateRange === '7days' && diffHours > 168) return false
-        if (temp.dateRange === '30days' && diffHours > 720) return false
-      }
-
-      return true
-    })
+    return filterLostFoundItems(INITIAL_ITEMS, temp, searchQuery)
   }, [temp, searchQuery])
 
   if (!isOpen) return null

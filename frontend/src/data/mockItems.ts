@@ -1,4 +1,11 @@
-import type { LostFoundItem, ItemCategory, PosSatpamInfo, ClaimTicket, AiMatchItem } from '../types/lostFound'
+import type {
+  LostFoundItem,
+  ItemCategory,
+  PosSatpamInfo,
+  ClaimTicket,
+  AiMatchItem,
+  FilterCriteria,
+} from '../types/lostFound'
 
 export const INITIAL_ITEMS: LostFoundItem[] = [
   {
@@ -306,3 +313,50 @@ export const INITIAL_AI_MATCHES: AiMatchItem[] = [
     ],
   },
 ]
+
+export function filterLostFoundItems(
+  items: LostFoundItem[],
+  criteria: FilterCriteria,
+  searchQuery: string = ''
+): LostFoundItem[] {
+  const q = searchQuery.trim().toLowerCase()
+  const now = new Date('2026-11-21T19:39:00').getTime()
+
+  return items.filter((item) => {
+    if (q) {
+      const match =
+        item.title.toLowerCase().includes(q) ||
+        item.locationDetail.toLowerCase().includes(q) ||
+        item.categoryLabel.toLowerCase().includes(q)
+      if (!match) return false
+    }
+
+    if (criteria.category !== 'all' && item.category !== criteria.category) {
+      return false
+    }
+
+    if (criteria.custody !== 'all' && item.custody !== criteria.custody) {
+      return false
+    }
+
+    if (criteria.posId !== 'all') {
+      if (criteria.posId === 'dibawa_penemu') {
+        if (item.custody !== 'dibawa_penemu') return false
+      } else if (item.posId !== criteria.posId) {
+        return false
+      }
+    }
+
+    if (criteria.dateRange !== 'all' && item.reportedDate) {
+      const itemTime = new Date(item.reportedDate).getTime()
+      const diffHours = (now - itemTime) / (1000 * 60 * 60)
+
+      if (criteria.dateRange === 'today' && diffHours > 24) return false
+      if (criteria.dateRange === '3days' && diffHours > 72) return false
+      if (criteria.dateRange === '7days' && diffHours > 168) return false
+      if (criteria.dateRange === '30days' && diffHours > 720) return false
+    }
+
+    return true
+  })
+}

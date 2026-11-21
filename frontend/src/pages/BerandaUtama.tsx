@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
-import { ChevronRight, Search, FileSearch, Camera, X } from 'lucide-react'
+import { ChevronRight, Search, X } from 'lucide-react'
 import type { ItemCategory, LostFoundItem, FilterCriteria } from '../types/lostFound'
-import { INITIAL_ITEMS, POS_SATPAM_LIST } from '../data/mockItems'
+import { INITIAL_ITEMS, POS_SATPAM_LIST, filterLostFoundItems } from '../data/mockItems'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
@@ -17,6 +17,7 @@ import { ScanQrModal } from '../components/modals/ScanQrModal'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
+import { QuickReportSheet } from '../components/modals/QuickReportSheet'
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -40,33 +41,29 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     setFilterCriteria((prev) => ({ ...prev, category: cat }))
   }
 
-  const activePosLabel = useMemo(() => {
-    if (filterCriteria.posId === 'all') return null
-    if (filterCriteria.posId === 'dibawa_penemu') return 'Dibawa Penemu'
-    const p = POS_SATPAM_LIST.find((pos) => pos.id === filterCriteria.posId)
-    return p ? p.name.replace('Pos Satpam ', '') : filterCriteria.posId
-  }, [filterCriteria.posId])
+  const activePosLabel = filterCriteria.posId !== 'all'
+    ? (filterCriteria.posId === 'dibawa_penemu'
+        ? 'Dibawa Penemu'
+        : POS_SATPAM_LIST.find((p) => p.id === filterCriteria.posId)?.name.replace('Pos Satpam ', '') || filterCriteria.posId)
+    : null
 
-  const activeDateLabel = useMemo(() => {
-    switch (filterCriteria.dateRange) {
-      case 'today':
-        return 'Hari Ini (<24 Jam)'
-      case '3days':
-        return '3 Hari Terakhir'
-      case '7days':
-        return '7 Hari Terakhir'
-      case '30days':
-        return '30 Hari Terakhir'
-      default:
-        return null
-    }
-  }, [filterCriteria.dateRange])
+  const activeDateLabel =
+    filterCriteria.dateRange === 'today'
+      ? 'Hari Ini (<24 Jam)'
+      : filterCriteria.dateRange === '3days'
+      ? '3 Hari Terakhir'
+      : filterCriteria.dateRange === '7days'
+      ? '7 Hari Terakhir'
+      : filterCriteria.dateRange === '30days'
+      ? '30 Hari Terakhir'
+      : null
 
-  const activeCustodyLabel = useMemo(() => {
-    if (filterCriteria.custody === 'pos_satpam') return 'Di Pos Satpam'
-    if (filterCriteria.custody === 'dibawa_penemu') return 'Di Penemu'
-    return null
-  }, [filterCriteria.custody])
+  const activeCustodyLabel =
+    filterCriteria.custody === 'pos_satpam'
+      ? 'Di Pos Satpam'
+      : filterCriteria.custody === 'dibawa_penemu'
+      ? 'Di Penemu'
+      : null
 
   const activeFilterCount = useMemo(() => {
     let count = 0
@@ -78,7 +75,6 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   }, [filterCriteria])
 
   const isFiltered = searchQuery.trim() !== '' || activeFilterCount > 0
-
   const hasHiddenFilters =
     searchQuery.trim() !== '' ||
     filterCriteria.posId !== 'all' ||
@@ -86,55 +82,23 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     filterCriteria.dateRange !== 'all'
 
   const filteredItems = useMemo(() => {
-    return INITIAL_ITEMS.filter((item) => {
-      // 1. Text Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        const matchSearch =
-          item.title.toLowerCase().includes(q) ||
-          item.locationDetail.toLowerCase().includes(q) ||
-          item.categoryLabel.toLowerCase().includes(q)
-        if (!matchSearch) return false
-      }
-
-      // 2. Kategori
-      if (filterCriteria.category !== 'all' && item.category !== filterCriteria.category) {
-        return false
-      }
-
-      // 3. Custody Status
-      if (filterCriteria.custody !== 'all' && item.custody !== filterCriteria.custody) {
-        return false
-      }
-
-      // 4. Pos Satpam / Lokasi
-      if (filterCriteria.posId !== 'all') {
-        if (filterCriteria.posId === 'dibawa_penemu') {
-          if (item.custody !== 'dibawa_penemu') return false
-        } else if (item.posId !== filterCriteria.posId) {
-          return false
-        }
-      }
-
-      // 5. Rentang Waktu (Reference date: 2026-11-21T19:39:00Z)
-      if (filterCriteria.dateRange !== 'all' && item.reportedDate) {
-        const itemTime = new Date(item.reportedDate).getTime()
-        const now = new Date('2026-11-21T19:39:00').getTime()
-        const diffHours = (now - itemTime) / (1000 * 60 * 60)
-
-        if (filterCriteria.dateRange === 'today' && diffHours > 24) return false
-        if (filterCriteria.dateRange === '3days' && diffHours > 72) return false
-        if (filterCriteria.dateRange === '7days' && diffHours > 168) return false
-        if (filterCriteria.dateRange === '30days' && diffHours > 720) return false
-      }
-
-      return true
-    })
+    return filterLostFoundItems(INITIAL_ITEMS, filterCriteria, searchQuery)
   }, [filterCriteria, searchQuery])
 
   const handleResetFilters = () => {
     setFilterCriteria(DEFAULT_FILTER_CRITERIA)
     setSearchQuery('')
+  }
+
+  const handleFilterByPosName = (posName: string) => {
+    const matched = POS_SATPAM_LIST.find(
+      (p) => posName.includes(p.code) || posName.includes(p.name)
+    )
+    if (matched) {
+      setFilterCriteria((prev) => ({ ...prev, posId: matched.id }))
+    } else {
+      setSearchQuery(posName)
+    }
   }
 
   const handleActionClick = (title: string) => {
@@ -310,73 +274,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         />
 
         {/* Quick Report Bottom Sheet */}
-        {showQuickReportSheet && (
-          <div
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-end justify-center p-0 sm:p-4"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-in slide-in-from-bottom-8 duration-200">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div className="flex flex-col">
-                  <h4 className="text-base font-bold text-[#14261B]">Pilih Jenis Laporan</h4>
-                  <p className="text-xs text-[#44574B]">Pilih layanan cepat Lost &amp; Found FST</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowQuickReportSheet(false)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowQuickReportSheet(false)
-                    if (onNavigateToLapor) onNavigateToLapor('lost')
-                  }}
-                  className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-[#155E38]/20 bg-[#E4F1E8]/50 hover:bg-[#E4F1E8] text-left transition-all group"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-[#155E38] text-white flex items-center justify-center flex-shrink-0 group-hover:bg-[#0F4A2C]">
-                    <FileSearch className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-[#0F4A2C]">Lapor Barang Hilang</span>
-                    <span className="text-[11px] text-[#44574B]">Saya kehilangan barang di area kampus</span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowQuickReportSheet(false)
-                    if (onNavigateToLapor) onNavigateToLapor('found')
-                  }}
-                  className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left transition-all group"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 text-[#155E38] flex items-center justify-center flex-shrink-0 shadow-xs">
-                    <Camera className="w-5 h-5 text-[#155E38]" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-[#14261B]">Lapor Barang Temuan</span>
-                    <span className="text-[11px] text-[#44574B]">Saya menemukan barang milik orang lain</span>
-                  </div>
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowQuickReportSheet(false)}
-                className="w-full py-2.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200 mt-1"
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        )}
+        <QuickReportSheet
+          isOpen={showQuickReportSheet}
+          onClose={() => setShowQuickReportSheet(false)}
+          onSelectType={(type) => onNavigateToLapor?.(type)}
+        />
 
         <ActionModal
           title={activeActionModal}
@@ -394,41 +296,21 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           isOpen={showScanQrModal}
           onClose={() => setShowScanQrModal(false)}
           onTitipBarang={() => onNavigateToLapor?.('found')}
-          onFilterByPos={(posName) => {
-            const matchedPos = POS_SATPAM_LIST.find(
-              (p) => posName.includes(p.code) || posName.includes(p.name)
-            )
-            if (matchedPos) {
-              setFilterCriteria((prev) => ({ ...prev, posId: matchedPos.id }))
-            } else {
-              setSearchQuery(posName)
-            }
-          }}
+          onFilterByPos={handleFilterByPosName}
         />
 
         {/* Modal Cek Tiket & Status Klaim */}
         <CekKlaimModal
           isOpen={showCekKlaimModal}
           onClose={() => setShowCekKlaimModal(false)}
-          onNavigateToPos={(posName) => {
-            const matchedPos = POS_SATPAM_LIST.find(
-              (p) => posName.includes(p.code) || posName.includes(p.name)
-            )
-            if (matchedPos) {
-              setFilterCriteria((prev) => ({ ...prev, posId: matchedPos.id }))
-            } else {
-              setSearchQuery(posName)
-            }
-          }}
+          onNavigateToPos={handleFilterByPosName}
         />
 
         {/* Modal Radar AI Match */}
         <AiMatchModal
           isOpen={showAiMatchModal}
           onClose={() => setShowAiMatchModal(false)}
-          onClaimSuccess={() => {
-            setShowCekKlaimModal(true)
-          }}
+          onClaimSuccess={() => setShowCekKlaimModal(true)}
         />
 
         {/* Modal Filter Lanjutan */}
