@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, ShieldCheck, FileCheck, CheckCircle2 } from 'lucide-react'
+import { X, ShieldCheck, FileCheck, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ClaimTicket } from '../../types/lostFound'
 import { INITIAL_CLAIM_TICKETS } from '../../data/mockItems'
 import { ClaimTicketCard } from './claim/ClaimTicketCard'
@@ -19,6 +19,7 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   const [activeTab, setActiveTab] = useState<'aktif' | 'riwayat'>('aktif')
   const [tickets, setTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
   const [cancelModalTicketId, setCancelModalTicketId] = useState<string | null>(null)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   if (!isOpen) return null
 
@@ -30,18 +31,22 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   )
 
   const handleCancelClaim = (ticketId: string) => {
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === ticketId
-          ? {
-              ...t,
-              status: 'cancelled' as const,
-              statusLabel: 'Dibatalkan oleh Pengguna',
-            }
-          : t
+    setIsCancelling(true)
+    setTimeout(() => {
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? {
+                ...t,
+                status: 'cancelled' as const,
+                statusLabel: 'Dibatalkan oleh Pengguna',
+              }
+            : t
+        )
       )
-    )
-    setCancelModalTicketId(null)
+      setIsCancelling(false)
+      setCancelModalTicketId(null)
+    }, 500)
   }
 
   return (
@@ -171,13 +176,22 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
+                  disabled={isCancelling}
                   onClick={() => handleCancelClaim(cancelModalTicketId)}
-                  className="flex-1 py-2 rounded-xl bg-[#B3261E] text-white text-xs font-bold hover:bg-[#8C1D18]"
+                  className="flex-1 py-2 rounded-xl bg-[#B3261E] text-white text-xs font-bold hover:bg-[#8C1D18] disabled:opacity-75 flex items-center justify-center gap-1.5"
                 >
-                  Ya, Batalkan
+                  {isCancelling ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Membatalkan...</span>
+                    </>
+                  ) : (
+                    'Ya, Batalkan'
+                  )}
                 </button>
                 <button
                   type="button"
+                  disabled={isCancelling}
                   onClick={() => setCancelModalTicketId(null)}
                   className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200"
                 >

@@ -12,6 +12,7 @@ import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
 import { CategoryChips } from '../components/home/CategoryChips'
 import { ActiveFilterTags } from '../components/home/ActiveFilterTags'
 import { ItemCard } from '../components/home/ItemCard'
+import { ItemCardSkeleton } from '../components/home/ItemCardSkeleton'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
@@ -36,6 +37,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     filteredItems,
     labels: { activeCount, posLabel, dateLabel, custodyLabel },
     isFiltered,
+    isLoading,
     resetFilters: handleResetFilters,
     filterByPosName: handleFilterByPosName,
   } = useLostFoundFilter(INITIAL_ITEMS, POS_SATPAM_LIST)
@@ -142,7 +144,15 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               onClearDate={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
             />
 
-            {filteredItems.length === 0 ? (
+            {isLoading ? (
+              <div
+                className="grid grid-cols-2 gap-3"
+                aria-busy="true"
+                aria-label="Memuat daftar barang temuan"
+              >
+                <ItemCardSkeleton count={4} />
+              </div>
+            ) : filteredItems.length === 0 ? (
               <div className="w-full py-12 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-dashed border-slate-200 p-6">
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
                   <Search className="w-6 h-6" />

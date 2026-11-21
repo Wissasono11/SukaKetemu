@@ -10,6 +10,7 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
+  Loader2,
 } from 'lucide-react'
 import type { LostFoundItem } from '../../types/lostFound'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
@@ -26,6 +27,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   onClaimSuccess,
 }) => {
   const [isClaimed, setIsClaimed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { copied, copy } = useCopyToClipboard()
 
   if (!item) return null
@@ -33,8 +35,12 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const isPosSatpam = item.custody === 'pos_satpam'
 
   const handleClaim = () => {
-    setIsClaimed(true)
-    if (onClaimSuccess) onClaimSuccess(item)
+    setIsSubmitting(true)
+    setTimeout(() => {
+      setIsSubmitting(false)
+      setIsClaimed(true)
+      if (onClaimSuccess) onClaimSuccess(item)
+    }, 600)
   }
 
   const handleShare = () => {
@@ -174,10 +180,20 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
             <button
               type="button"
               onClick={handleClaim}
-              className="w-full py-3.5 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] active:scale-[0.99] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+              disabled={isSubmitting}
+              className="w-full py-3.5 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] active:scale-[0.99] disabled:opacity-80 disabled:cursor-not-allowed text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
             >
-              <span>Klaim Barang Ini</span>
-              <ArrowRight className="w-4 h-4" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Menerbitkan Tiket Klaim...</span>
+                </>
+              ) : (
+                <>
+                  <span>Klaim Barang Ini</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
 
             <div className="flex items-center gap-2">

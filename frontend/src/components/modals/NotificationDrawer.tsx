@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   X,
   Radar,
@@ -6,6 +6,7 @@ import {
   Bell,
   CheckCheck,
   ChevronRight,
+  Loader2,
 } from 'lucide-react'
 
 export interface AppNotification {
@@ -34,9 +35,19 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   onMarkAllAsRead,
   onSelectNotification,
 }) => {
+  const [isMarking, setIsMarking] = useState(false)
+
   if (!isOpen) return null
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
+
+  const handleMarkAll = () => {
+    setIsMarking(true)
+    setTimeout(() => {
+      setIsMarking(false)
+      onMarkAllAsRead()
+    }, 350)
+  }
 
   const renderIcon = (type: AppNotification['type']) => {
     switch (type) {
@@ -83,11 +94,16 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             {unreadCount > 0 && (
               <button
                 type="button"
-                onClick={onMarkAllAsRead}
-                className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+                disabled={isMarking}
+                onClick={handleMarkAll}
+                className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] px-2 py-1 rounded-md transition-colors flex items-center gap-1 disabled:opacity-60"
               >
-                <CheckCheck className="w-3.5 h-3.5" />
-                <span>Tandai Dibaca</span>
+                {isMarking ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CheckCheck className="w-3.5 h-3.5" />
+                )}
+                <span>{isMarking ? 'Menandai...' : 'Tandai Dibaca'}</span>
               </button>
             )}
             <button
