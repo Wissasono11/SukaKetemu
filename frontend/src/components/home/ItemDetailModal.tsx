@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import type { LostFoundItem } from '../../types/lostFound'
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 
 interface ItemDetailModalProps {
   item: LostFoundItem | null
@@ -25,7 +26,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   onClaimSuccess,
 }) => {
   const [isClaimed, setIsClaimed] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const { copied, copy } = useCopyToClipboard()
 
   if (!item) return null
 
@@ -37,9 +38,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   }
 
   const handleShare = () => {
-    navigator.clipboard?.writeText(window.location.href)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    copy(window.location.href)
   }
 
   return (

@@ -1,41 +1,12 @@
 import React, { useMemo } from 'react'
-import {
-  LayoutGrid,
-  Headphones,
-  FileText,
-  CupSoda,
-  Briefcase,
-  Layers,
-  Shapes,
-} from 'lucide-react'
 import type { ItemCategory } from '../../types/lostFound'
 import { CATEGORIES, INITIAL_ITEMS } from '../../data/mockItems'
+import { getCategoryIcon } from '../../utils/categoryIcons'
 
 interface CategoryChipsProps {
   selectedCategory: ItemCategory
   onSelectCategory: (category: ItemCategory) => void
   totalCount?: number
-}
-
-const renderCategoryIcon = (category: ItemCategory, className: string) => {
-  switch (category) {
-    case 'all':
-      return <LayoutGrid className={className} />
-    case 'elektronik':
-      return <Headphones className={className} />
-    case 'dokumen':
-      return <FileText className={className} />
-    case 'botol':
-      return <CupSoda className={className} />
-    case 'tas':
-      return <Briefcase className={className} />
-    case 'ibadah':
-      return <Layers className={className} />
-    case 'lainnya':
-      return <Shapes className={className} />
-    default:
-      return null
-  }
 }
 
 export const CategoryChips: React.FC<CategoryChipsProps> = ({
@@ -62,6 +33,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
         {CATEGORIES.map((cat) => {
           const isActive = selectedCategory === cat.id
           const count = categoryCounts[cat.id] || 0
+          const CatIcon = getCategoryIcon(cat.id)
 
           return (
             <button
@@ -74,10 +46,7 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
                   : 'bg-white text-[#44574B] border border-slate-200/80 hover:bg-slate-50'
               }`}
             >
-              {renderCategoryIcon(
-                cat.id,
-                `w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#155E38]'}`
-              )}
+              <CatIcon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#155E38]'}`} />
               <span>{cat.label}</span>
               {count > 0 && (
                 <span

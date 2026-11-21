@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
-import type { ItemCategory, LostFoundItem, FilterCriteria } from '../types/lostFound'
+import type { LostFoundItem } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
-import { INITIAL_ITEMS, POS_SATPAM_LIST, filterLostFoundItems } from '../data/mockItems'
+import { INITIAL_ITEMS, POS_SATPAM_LIST } from '../data/mockItems'
 import { INITIAL_NOTIFICATIONS } from '../data/mockNotifications'
-import { getFilterLabels, matchPosSatpam } from '../utils/filterUtils'
+import { useLostFoundFilter } from '../hooks/useLostFoundFilter'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
 import { QuickActions } from '../components/home/QuickActions'
@@ -27,8 +27,19 @@ interface BerandaUtamaProps {
 }
 
 export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor }) => {
-  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria>(DEFAULT_FILTER_CRITERIA)
-  const [searchQuery, setSearchQuery] = useState('')
+  const {
+    criteria: filterCriteria,
+    setCriteria: setFilterCriteria,
+    searchQuery,
+    setSearchQuery,
+    setCategory: handleSelectCategory,
+    filteredItems,
+    labels: { activeCount, posLabel, dateLabel, custodyLabel },
+    isFiltered,
+    resetFilters: handleResetFilters,
+    filterByPosName: handleFilterByPosName,
+  } = useLostFoundFilter(INITIAL_ITEMS, POS_SATPAM_LIST)
+
   const [activeTab, setActiveTab] = useState<TabId>('beranda')
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false)
@@ -41,32 +52,6 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
 
   const hasUnreadNotifications = notifications.some((n) => !n.isRead)
-
-  const { activeCount, posLabel, dateLabel, custodyLabel } = useMemo(
-    () => getFilterLabels(filterCriteria, POS_SATPAM_LIST),
-    [filterCriteria]
-  )
-
-  const isFiltered = searchQuery.trim() !== '' || activeCount > 0
-
-  const filteredItems = useMemo(
-    () => filterLostFoundItems(INITIAL_ITEMS, filterCriteria, searchQuery),
-    [filterCriteria, searchQuery]
-  )
-
-  const handleResetFilters = () => {
-    setFilterCriteria(DEFAULT_FILTER_CRITERIA)
-    setSearchQuery('')
-  }
-
-  const handleFilterByPosName = (posName: string) => {
-    const matched = matchPosSatpam(POS_SATPAM_LIST, posName)
-    if (matched) {
-      setFilterCriteria((prev) => ({ ...prev, posId: matched.id }))
-    } else {
-      setSearchQuery(posName)
-    }
-  }
 
   const handleActionClick = (title: string) => {
     switch (title) {
@@ -115,9 +100,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
           <CategoryChips
             selectedCategory={filterCriteria.category}
-            onSelectCategory={(cat: ItemCategory) =>
-              setFilterCriteria((prev) => ({ ...prev, category: cat }))
-            }
+            onSelectCategory={handleSelectCategory}
             totalCount={filteredItems.length}
           />
 

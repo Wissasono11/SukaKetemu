@@ -6,13 +6,7 @@ import {
   Shield,
   User,
   Calendar,
-  Layers,
   Check,
-  Headphones,
-  FileText,
-  CupSoda,
-  Briefcase,
-  Shapes,
   LayoutGrid,
 } from 'lucide-react'
 import type {
@@ -26,6 +20,7 @@ import {
   filterLostFoundItems,
 } from '../../data/mockItems'
 import { DEFAULT_FILTER_CRITERIA } from '../../types/lostFound'
+import { getCategoryIcon } from '../../utils/categoryIcons'
 
 interface FilterModalProps {
   isOpen: boolean
@@ -34,16 +29,6 @@ interface FilterModalProps {
   onApply: (criteria: FilterCriteria) => void
   onReset: () => void
   searchQuery?: string
-}
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  all: LayoutGrid,
-  elektronik: Headphones,
-  dokumen: FileText,
-  botol: CupSoda,
-  tas: Briefcase,
-  ibadah: Layers,
-  lainnya: Shapes,
 }
 
 const DATE_OPTIONS: { id: DateRangeOption; label: string }[] = [
@@ -156,7 +141,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
                 const isSelected = temp.category === cat.id
-                const CatIcon = CATEGORY_ICONS[cat.id] || LayoutGrid
+                const CatIcon = getCategoryIcon(cat.id)
                 return (
                   <button
                     key={cat.id}

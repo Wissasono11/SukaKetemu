@@ -1,10 +1,5 @@
 import React, { useState } from 'react'
 import {
-  Headphones,
-  FileText,
-  CupSoda,
-  Briefcase,
-  Layers,
   Shield,
   User,
   MapPin,
@@ -12,6 +7,7 @@ import {
   Shapes,
 } from 'lucide-react'
 import type { LostFoundItem } from '../../types/lostFound'
+import { getCategoryIcon } from '../../utils/categoryIcons'
 
 interface ItemCardProps {
   item: LostFoundItem
@@ -21,6 +17,7 @@ interface ItemCardProps {
 export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
   const [imgError, setImgError] = useState(false)
   const isPosSatpam = item.custody === 'pos_satpam'
+  const CatIcon = getCategoryIcon(item.category)
 
   return (
     <article
@@ -54,12 +51,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
         )}
 
         <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-md shadow-xs">
-          {item.category === 'elektronik' && <Headphones className="w-3 h-3 text-[#44574B]" />}
-          {item.category === 'dokumen' && <FileText className="w-3 h-3 text-[#44574B]" />}
-          {item.category === 'botol' && <CupSoda className="w-3 h-3 text-[#44574B]" />}
-          {item.category === 'tas' && <Briefcase className="w-3 h-3 text-[#44574B]" />}
-          {item.category === 'ibadah' && <Layers className="w-3 h-3 text-[#44574B]" />}
-          {item.category === 'lainnya' && <Shapes className="w-3 h-3 text-[#44574B]" />}
+          <CatIcon className="w-3 h-3 text-[#44574B]" />
           <span className="text-[10px] font-medium text-[#14261B]">
             {item.categoryLabel}
           </span>

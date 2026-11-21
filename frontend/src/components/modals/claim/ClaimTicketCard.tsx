@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   MapPin,
   QrCode,
@@ -8,6 +8,7 @@ import {
   Check,
 } from 'lucide-react'
 import type { ClaimTicket } from '../../../types/lostFound'
+import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
 
 interface ClaimTicketCardProps {
   ticket: ClaimTicket
@@ -20,12 +21,10 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
   onNavigateToPos,
   onRequestCancel,
 }) => {
-  const [copiedOtp, setCopiedOtp] = useState(false)
+  const { copied: copiedOtp, copy: copyOtp } = useCopyToClipboard()
 
   const handleCopyOtp = (otp: string) => {
-    navigator.clipboard?.writeText(otp)
-    setCopiedOtp(true)
-    setTimeout(() => setCopiedOtp(false), 2000)
+    copyOtp(otp)
   }
 
   return (
