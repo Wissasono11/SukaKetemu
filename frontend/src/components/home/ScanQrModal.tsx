@@ -267,7 +267,7 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                 </div>
               </div>
 
-              {/* Tombol Aksi Langsung */}
+              {/* Penjelasan 2 Opsi Alur */}
               <div className="flex flex-col gap-2 pt-1">
                 <button
                   type="button"
@@ -275,10 +275,15 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                     onClose()
                     if (onTitipBarang) onTitipBarang(scannedPos.name)
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all"
+                  className="w-full py-3.5 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] text-white text-xs font-bold flex flex-col items-center justify-center gap-0.5 shadow-sm active:scale-[0.99] transition-all"
                 >
-                  <span>Titipkan Barang Temuan di Pos Ini</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <div className="flex items-center gap-2">
+                    <span>Serahkan Barang ke Pos Ini</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] font-normal text-[#E4F1E8]">
+                    Tanda terima digital resmi • Bebas tanggung jawab
+                  </span>
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -288,9 +293,10 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                       onClose()
                       if (onFilterByPos) onFilterByPos(scannedPos.name)
                     }}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#14261B] transition-colors"
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#14261B] transition-colors flex items-center justify-center gap-1.5"
                   >
-                    Lihat Barang di Pos Ini
+                    <PackageOpen className="w-3.5 h-3.5 text-[#155E38]" />
+                    <span>Cek Barang di Pos Ini</span>
                   </button>
 
                   <button
