@@ -4,7 +4,7 @@ import {
   ScanSearch,
   CheckCircle2,
   FileCheck,
-  Sparkles,
+  Radar,
 } from 'lucide-react'
 import type { AiMatchItem } from '../../types/lostFound'
 import { INITIAL_AI_MATCHES } from '../../data/mockItems'
@@ -138,7 +138,7 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
                 {alternativeMatches.length > 0 && (
                   <div className="flex flex-col gap-2 pt-1 border-t border-slate-100">
                     <span className="text-xs font-bold text-[#14261B] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#C59B27]" />
+                      <Radar className="w-3.5 h-3.5 text-[#155E38]" />
                       Potensi Kemiripan Lainnya ({alternativeMatches.length}):
                     </span>
                     <div className="flex flex-col gap-2">

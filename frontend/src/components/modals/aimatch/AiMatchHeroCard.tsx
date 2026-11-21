@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Shield,
   MapPin,
-  Sparkles,
+  Radar,
 } from 'lucide-react'
 import type { AiMatchItem } from '../../../types/lostFound'
 
@@ -24,7 +24,7 @@ export const AiMatchHeroCard: React.FC<AiMatchHeroCardProps> = ({
       {/* Header Skor Kecocokan */}
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-xs font-bold border border-[#155E38]/20">
-          <Sparkles className="w-3.5 h-3.5 text-[#155E38]" />
+          <Radar className="w-3.5 h-3.5 text-[#155E38]" />
           {item.matchScore}% Kecocokan Tertinggi
         </span>
         <span className="text-[11px] text-[#44574B]">
