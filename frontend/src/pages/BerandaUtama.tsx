@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react'
-import { ChevronRight, Search, X } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
 import type { ItemCategory, LostFoundItem, FilterCriteria } from '../types/lostFound'
-import { INITIAL_ITEMS, POS_SATPAM_LIST, filterLostFoundItems } from '../data/mockItems'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
+import { INITIAL_ITEMS, POS_SATPAM_LIST, filterLostFoundItems } from '../data/mockItems'
+import { INITIAL_NOTIFICATIONS } from '../data/mockNotifications'
+import { getFilterLabels, matchPosSatpam } from '../utils/filterUtils'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
 import { QuickActions } from '../components/home/QuickActions'
 import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
 import { CategoryChips } from '../components/home/CategoryChips'
+import { ActiveFilterTags } from '../components/home/ActiveFilterTags'
 import { ItemCard } from '../components/home/ItemCard'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
@@ -18,37 +21,6 @@ import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
 import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
-
-const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-1',
-    type: 'aimatch',
-    title: 'Radar AI: Kecocokan 94% Ditemukan',
-    message: 'TWS Soundcore hitam yang Anda laporkan terdeteksi sangat mirip dengan temuan di Musholla Lt. 2 FST.',
-    timeAgo: '10m lalu',
-    isRead: false,
-    actionLabel: 'Buka Radar AI',
-    actionTarget: 'aimatch',
-  },
-  {
-    id: 'notif-2',
-    type: 'claim',
-    title: 'Klaim Siap Diambil di Pos Satpam',
-    message: 'Tiket #CLM-FST-8821 telah disetujui. Silakan tunjukkan kode OTP di Pos Utama Lobby FST.',
-    timeAgo: '2j lalu',
-    isRead: false,
-    actionLabel: 'Buka Tiket Pengambilan',
-    actionTarget: 'claim',
-  },
-  {
-    id: 'notif-3',
-    type: 'system',
-    title: 'Layanan Pengamanan FST Aktif',
-    message: 'Semua checkpoint Pos Satpam FST siap melayani serah terima barang temuan mahasiswa.',
-    timeAgo: '1h lalu',
-    isRead: true,
-  },
-]
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -70,54 +42,17 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
   const hasUnreadNotifications = notifications.some((n) => !n.isRead)
 
-  const selectedCategory = filterCriteria.category
-  const handleSelectCategory = (cat: ItemCategory) => {
-    setFilterCriteria((prev) => ({ ...prev, category: cat }))
-  }
+  const { activeCount, posLabel, dateLabel, custodyLabel } = useMemo(
+    () => getFilterLabels(filterCriteria, POS_SATPAM_LIST),
+    [filterCriteria]
+  )
 
-  const activePosLabel = filterCriteria.posId !== 'all'
-    ? (filterCriteria.posId === 'dibawa_penemu'
-        ? 'Dibawa Penemu'
-        : POS_SATPAM_LIST.find((p) => p.id === filterCriteria.posId)?.name.replace('Pos Satpam ', '') || filterCriteria.posId)
-    : null
+  const isFiltered = searchQuery.trim() !== '' || activeCount > 0
 
-  const activeDateLabel =
-    filterCriteria.dateRange === 'today'
-      ? 'Hari Ini (<24 Jam)'
-      : filterCriteria.dateRange === '3days'
-      ? '3 Hari Terakhir'
-      : filterCriteria.dateRange === '7days'
-      ? '7 Hari Terakhir'
-      : filterCriteria.dateRange === '30days'
-      ? '30 Hari Terakhir'
-      : null
-
-  const activeCustodyLabel =
-    filterCriteria.custody === 'pos_satpam'
-      ? 'Di Pos Satpam'
-      : filterCriteria.custody === 'dibawa_penemu'
-      ? 'Di Penemu'
-      : null
-
-  const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (filterCriteria.category !== 'all') count++
-    if (filterCriteria.posId !== 'all') count++
-    if (filterCriteria.custody !== 'all') count++
-    if (filterCriteria.dateRange !== 'all') count++
-    return count
-  }, [filterCriteria])
-
-  const isFiltered = searchQuery.trim() !== '' || activeFilterCount > 0
-  const hasHiddenFilters =
-    searchQuery.trim() !== '' ||
-    filterCriteria.posId !== 'all' ||
-    filterCriteria.custody !== 'all' ||
-    filterCriteria.dateRange !== 'all'
-
-  const filteredItems = useMemo(() => {
-    return filterLostFoundItems(INITIAL_ITEMS, filterCriteria, searchQuery)
-  }, [filterCriteria, searchQuery])
+  const filteredItems = useMemo(
+    () => filterLostFoundItems(INITIAL_ITEMS, filterCriteria, searchQuery),
+    [filterCriteria, searchQuery]
+  )
 
   const handleResetFilters = () => {
     setFilterCriteria(DEFAULT_FILTER_CRITERIA)
@@ -125,9 +60,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   }
 
   const handleFilterByPosName = (posName: string) => {
-    const matched = POS_SATPAM_LIST.find(
-      (p) => posName.includes(p.code) || posName.includes(p.name)
-    )
+    const matched = matchPosSatpam(POS_SATPAM_LIST, posName)
     if (matched) {
       setFilterCriteria((prev) => ({ ...prev, posId: matched.id }))
     } else {
@@ -136,18 +69,25 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   }
 
   const handleActionClick = (title: string) => {
-    if (title === 'Lapor Barang Hilang') {
-      if (onNavigateToLapor) onNavigateToLapor('lost')
-    } else if (title === 'Lapor Barang Temuan') {
-      if (onNavigateToLapor) onNavigateToLapor('found')
-    } else if (title === 'Scan QR Pos Satpam') {
-      setShowScanQrModal(true)
-    } else if (title === 'Cek Status Klaim') {
-      setShowCekKlaimModal(true)
-    } else if (title === 'Pencocokan AI Multimodal') {
-      setShowAiMatchModal(true)
-    } else if (title === 'Notifikasi') {
-      setShowNotificationDrawer(true)
+    switch (title) {
+      case 'Lapor Barang Hilang':
+        onNavigateToLapor?.('lost')
+        break
+      case 'Lapor Barang Temuan':
+        onNavigateToLapor?.('found')
+        break
+      case 'Scan QR Pos Satpam':
+        setShowScanQrModal(true)
+        break
+      case 'Cek Status Klaim':
+        setShowCekKlaimModal(true)
+        break
+      case 'Pencocokan AI Multimodal':
+        setShowAiMatchModal(true)
+        break
+      case 'Notifikasi':
+        setShowNotificationDrawer(true)
+        break
     }
   }
 
@@ -164,7 +104,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
             value={searchQuery}
             onChange={setSearchQuery}
             onFilterClick={() => setShowFilterModal(true)}
-            activeFilterCount={activeFilterCount}
+            activeFilterCount={activeCount}
           />
 
           <QuickActions onActionClick={handleActionClick} />
@@ -174,8 +114,10 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           )}
 
           <CategoryChips
-            selectedCategory={selectedCategory}
-            onSelectCategory={handleSelectCategory}
+            selectedCategory={filterCriteria.category}
+            onSelectCategory={(cat: ItemCategory) =>
+              setFilterCriteria((prev) => ({ ...prev, category: cat }))
+            }
             totalCount={filteredItems.length}
           />
 
@@ -205,66 +147,17 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               )}
             </div>
 
-            {/* Micro-pills hanya jika ada filter spesifik dari modal/pencarian */}
-            {hasHiddenFilters && (
-              <div className="flex flex-wrap items-center gap-1.5 px-0.5 animate-in fade-in duration-150">
-                {searchQuery.trim() && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-[#14261B] text-[11px] font-medium border border-slate-200">
-                    "{searchQuery}"
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      className="text-slate-400 hover:text-slate-700 ml-0.5"
-                      aria-label="Hapus filter kata kunci"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
-
-                {activePosLabel && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
-                    Pos: {activePosLabel}
-                    <button
-                      type="button"
-                      onClick={() => setFilterCriteria((p) => ({ ...p, posId: 'all' }))}
-                      className="hover:text-red-700 ml-0.5"
-                      aria-label="Hapus filter pos"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
-
-                {activeCustodyLabel && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
-                    {activeCustodyLabel}
-                    <button
-                      type="button"
-                      onClick={() => setFilterCriteria((p) => ({ ...p, custody: 'all' }))}
-                      className="hover:text-red-700 ml-0.5"
-                      aria-label="Hapus filter status fisik"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
-
-                {activeDateLabel && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
-                    Waktu: {activeDateLabel}
-                    <button
-                      type="button"
-                      onClick={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
-                      className="hover:text-red-700 ml-0.5"
-                      aria-label="Hapus filter waktu"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
-              </div>
-            )}
+            {/* Pill Tags Filter Tersembunyi */}
+            <ActiveFilterTags
+              searchQuery={searchQuery}
+              posLabel={posLabel}
+              custodyLabel={custodyLabel}
+              dateLabel={dateLabel}
+              onClearQuery={() => setSearchQuery('')}
+              onClearPos={() => setFilterCriteria((p) => ({ ...p, posId: 'all' }))}
+              onClearCustody={() => setFilterCriteria((p) => ({ ...p, custody: 'all' }))}
+              onClearDate={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
+            />
 
             {filteredItems.length === 0 ? (
               <div className="w-full py-12 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-dashed border-slate-200 p-6">
