@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { ChevronRight, Search, FileSearch, Camera, X } from 'lucide-react'
 import type { ItemCategory, LostFoundItem, FilterCriteria } from '../types/lostFound'
-import { INITIAL_ITEMS, CATEGORIES, POS_SATPAM_LIST } from '../data/mockItems'
+import { INITIAL_ITEMS, POS_SATPAM_LIST } from '../data/mockItems'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
 import { HomeHeader } from '../components/home/HomeHeader'
 import { SearchBar } from '../components/home/SearchBar'
@@ -68,12 +68,6 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     return null
   }, [filterCriteria.custody])
 
-  const activeCategoryLabel = useMemo(() => {
-    if (filterCriteria.category === 'all') return null
-    const c = CATEGORIES.find((cat) => cat.id === filterCriteria.category)
-    return c ? c.label : filterCriteria.category
-  }, [filterCriteria.category])
-
   const activeFilterCount = useMemo(() => {
     let count = 0
     if (filterCriteria.category !== 'all') count++
@@ -82,6 +76,14 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     if (filterCriteria.dateRange !== 'all') count++
     return count
   }, [filterCriteria])
+
+  const isFiltered = searchQuery.trim() !== '' || activeFilterCount > 0
+
+  const hasHiddenFilters =
+    searchQuery.trim() !== '' ||
+    filterCriteria.posId !== 'all' ||
+    filterCriteria.custody !== 'all' ||
+    filterCriteria.dateRange !== 'all'
 
   const filteredItems = useMemo(() => {
     return INITIAL_ITEMS.filter((item) => {
@@ -179,105 +181,87 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           {/* Grid Barang Temuan */}
           <section className="w-full flex flex-col gap-3">
             <div className="flex items-center justify-between px-0.5">
-              <h3 className="text-sm font-bold text-[#14261B]">Barang Temuan Terbaru</h3>
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] flex items-center gap-0.5"
-              >
-                Lihat Semua ({INITIAL_ITEMS.length})
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              <h3 className="text-sm font-bold text-[#14261B]">
+                {isFiltered ? `Hasil Temuan (${filteredItems.length})` : 'Barang Temuan Terbaru'}
+              </h3>
+              {isFiltered ? (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs font-bold text-[#155E38] hover:text-[#0F4A2C] transition-colors"
+                >
+                  Reset Filter
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs font-semibold text-[#155E38] hover:text-[#0F4A2C] flex items-center gap-0.5"
+                >
+                  Lihat Semua ({INITIAL_ITEMS.length})
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
-            {/* Feedback Status Filter / Pencarian Aktif */}
-            {(searchQuery.trim() !== '' || activeFilterCount > 0) && (
-              <div className="flex flex-col gap-2 p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs text-xs text-[#14261B] text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-[#44574B]">
-                    Menemukan <strong>{filteredItems.length}</strong> barang
-                    {searchQuery.trim() && <> untuk "<strong>{searchQuery}</strong>"</>}
+            {/* Micro-pills hanya jika ada filter spesifik dari modal/pencarian */}
+            {hasHiddenFilters && (
+              <div className="flex flex-wrap items-center gap-1.5 px-0.5 animate-in fade-in duration-150">
+                {searchQuery.trim() && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-[#14261B] text-[11px] font-medium border border-slate-200">
+                    "{searchQuery}"
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="text-slate-400 hover:text-slate-700 ml-0.5"
+                      aria-label="Hapus filter kata kunci"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleResetFilters}
-                    className="text-[11px] font-bold text-[#155E38] hover:text-[#0F4A2C]"
-                  >
-                    Reset Semua
-                  </button>
-                </div>
+                )}
 
-                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
-                  {searchQuery.trim() && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-[#14261B] text-[10px] font-medium border border-slate-200">
-                      Kata kunci: "{searchQuery}"
-                      <button
-                        type="button"
-                        onClick={() => setSearchQuery('')}
-                        className="hover:text-red-600 ml-0.5"
-                        aria-label="Hapus filter kata kunci"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
+                {activePosLabel && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
+                    Pos: {activePosLabel}
+                    <button
+                      type="button"
+                      onClick={() => setFilterCriteria((p) => ({ ...p, posId: 'all' }))}
+                      className="hover:text-red-700 ml-0.5"
+                      aria-label="Hapus filter pos"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
 
-                  {activeCategoryLabel && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
-                      {activeCategoryLabel}
-                      <button
-                        type="button"
-                        onClick={() => setFilterCriteria((p) => ({ ...p, category: 'all' }))}
-                        className="hover:text-red-700 ml-0.5"
-                        aria-label="Hapus filter kategori"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
+                {activeCustodyLabel && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
+                    {activeCustodyLabel}
+                    <button
+                      type="button"
+                      onClick={() => setFilterCriteria((p) => ({ ...p, custody: 'all' }))}
+                      className="hover:text-red-700 ml-0.5"
+                      aria-label="Hapus filter status fisik"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
 
-                  {activePosLabel && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
-                      Pos: {activePosLabel}
-                      <button
-                        type="button"
-                        onClick={() => setFilterCriteria((p) => ({ ...p, posId: 'all' }))}
-                        className="hover:text-red-700 ml-0.5"
-                        aria-label="Hapus filter pos"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {activeCustodyLabel && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
-                      {activeCustodyLabel}
-                      <button
-                        type="button"
-                        onClick={() => setFilterCriteria((p) => ({ ...p, custody: 'all' }))}
-                        className="hover:text-red-700 ml-0.5"
-                        aria-label="Hapus filter status fisik"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {activeDateLabel && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#E4F1E8] text-[#0F4A2C] text-[10px] font-bold border border-[#155E38]/20">
-                      Waktu: {activeDateLabel}
-                      <button
-                        type="button"
-                        onClick={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
-                        className="hover:text-red-700 ml-0.5"
-                        aria-label="Hapus filter waktu"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-                </div>
+                {activeDateLabel && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-semibold border border-[#155E38]/20">
+                    Waktu: {activeDateLabel}
+                    <button
+                      type="button"
+                      onClick={() => setFilterCriteria((p) => ({ ...p, dateRange: 'all' }))}
+                      className="hover:text-red-700 ml-0.5"
+                      aria-label="Hapus filter waktu"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
               </div>
             )}
 

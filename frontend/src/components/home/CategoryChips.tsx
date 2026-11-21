@@ -14,7 +14,7 @@ import { CATEGORIES, INITIAL_ITEMS } from '../../data/mockItems'
 interface CategoryChipsProps {
   selectedCategory: ItemCategory
   onSelectCategory: (category: ItemCategory) => void
-  totalCount: number
+  totalCount?: number
 }
 
 const renderCategoryIcon = (category: ItemCategory, className: string) => {
@@ -41,7 +41,6 @@ const renderCategoryIcon = (category: ItemCategory, className: string) => {
 export const CategoryChips: React.FC<CategoryChipsProps> = ({
   selectedCategory,
   onSelectCategory,
-  totalCount,
 }) => {
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { all: INITIAL_ITEMS.length }
@@ -55,11 +54,8 @@ export const CategoryChips: React.FC<CategoryChipsProps> = ({
     <section className="w-full flex flex-col gap-2">
       <div className="flex items-center justify-between px-0.5">
         <h3 className="text-xs font-bold text-[#14261B] tracking-tight">
-          Filter Kategori
+          Kategori Barang
         </h3>
-        <span className="text-[11px] text-[#44574B]">
-          {totalCount} barang ditampilkan
-        </span>
       </div>
 
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar -mx-4 px-4 scroll-smooth">
