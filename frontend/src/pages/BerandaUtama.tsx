@@ -9,12 +9,12 @@ import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
 import { CategoryChips } from '../components/home/CategoryChips'
 import { ItemCard } from '../components/home/ItemCard'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
-import { ScanQrModal } from '../components/home/ScanQrModal'
-import { CekKlaimModal } from '../components/home/CekKlaimModal'
-import { AiMatchModal } from '../components/home/AiMatchModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
-import { ActionModal } from '../components/home/ActionModal'
+import { ActionModal } from '../components/modals/ActionModal'
+import { ScanQrModal } from '../components/modals/ScanQrModal'
+import { CekKlaimModal } from '../components/modals/CekKlaimModal'
+import { AiMatchModal } from '../components/modals/AiMatchModal'
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
