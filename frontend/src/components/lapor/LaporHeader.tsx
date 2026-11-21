@@ -21,8 +21,8 @@ export const LaporHeader: React.FC<LaporHeaderProps> = ({ isFound, onBack, onClo
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <span className="text-[10px] font-bold text-[#155E38] tracking-wider uppercase">
-            {isFound ? 'Mode Penemu' : 'Mode Kehilangan'}
+          <span className="text-[10px] font-bold text-[#155E38] uppercase">
+            {isFound ? 'Mode Penemu' : 'Mode Pelapor'}
           </span>
           <h2 className="text-base font-bold text-[#14261B]">
             {isFound ? 'Lapor Barang Temuan' : 'Lapor Barang Hilang'}
