@@ -157,34 +157,17 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
             </div>
 
             {isScanning ? (
-              <div className="py-8 px-4 flex flex-col items-center justify-center text-center bg-gradient-to-b from-[#E4F1E8]/40 via-white to-slate-50 rounded-2xl border border-[#155E38]/20 animate-in fade-in duration-200">
-                {/* Radar Visualizer Animation */}
-                <div className="relative w-28 h-28 flex items-center justify-center mb-4">
-                  {/* Outer Pulsing Ring */}
-                  <div className="absolute inset-0 rounded-full border border-[#155E38]/20 animate-ping opacity-60" />
-                  {/* Middle Ring */}
-                  <div className="absolute inset-2 rounded-full border border-[#155E38]/30" />
-                  {/* Rotating Radar Beam Sweep */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-[#155E38]/10 to-[#155E38]/30 animate-spin [animation-duration:2s]" />
-                  {/* Center Radar Icon */}
-                  <div className="relative z-10 w-12 h-12 rounded-full bg-[#155E38] text-white flex items-center justify-center shadow-md">
-                    <Radar className="w-6 h-6 animate-pulse" />
-                  </div>
+              <div className="py-12 px-4 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center gap-2.5 text-center shadow-2xs animate-pulse">
+                <div className="w-12 h-12 rounded-full bg-[#E4F1E8] flex items-center justify-center text-[#155E38]">
+                  <Radar className="w-6 h-6 animate-pulse" />
                 </div>
-
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E4F1E8] text-[#0F4A2C] text-[11px] font-bold border border-[#155E38]/20 mb-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#155E38] animate-ping" />
-                  <span>Kalkulasi Kemiripan AI Multimodal...</span>
-                </div>
-
-                <h4 className="text-sm font-bold text-[#14261B]">Memindai 24 Inventaris Pos Satpam</h4>
-                <p className="text-xs text-[#44574B] mt-1 max-w-xs leading-relaxed">
-                  Algoritma mencocokkan kemiripan visual warna, bentuk fisik, dan lokasi laporan Anda.
-                </p>
-
-                {/* Shimmer skeleton bar */}
-                <div className="w-44 h-1.5 rounded-full bg-slate-200 overflow-hidden mt-4">
-                  <div className="w-full h-full bg-[#155E38] animate-pulse" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-bold text-[#14261B]">
+                    Memindai Inventaris Kampus...
+                  </span>
+                  <span className="text-[11px] text-[#44574B]">
+                    Mencocokkan kemiripan visual AI dengan pos satpam
+                  </span>
                 </div>
               </div>
             ) : currentHero ? (
