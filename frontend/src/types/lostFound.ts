@@ -62,3 +62,23 @@ export interface ClaimTicket {
   matchedSecretFeature: string
   timeline: ClaimTimelineStep[]
 }
+
+export interface AiMatchEvidence {
+  factor: string
+  description: string
+  scorePercent: number
+}
+
+export interface AiMatchItem {
+  id: string
+  lostItemTitle: string
+  lostItemImageUrl: string
+  foundItemTitle: string
+  foundItemImageUrl: string
+  foundLocation: string
+  custodyPos: string
+  matchScore: number
+  timeAgo: string
+  evidenceList: AiMatchEvidence[]
+  status: 'unresolved' | 'claimed' | 'rejected'
+}

@@ -11,6 +11,7 @@ import { ItemCard } from '../components/home/ItemCard'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { ScanQrModal } from '../components/home/ScanQrModal'
 import { CekKlaimModal } from '../components/home/CekKlaimModal'
+import { AiMatchModal } from '../components/home/AiMatchModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { ActionModal } from '../components/home/ActionModal'
@@ -28,6 +29,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [showQuickReportSheet, setShowQuickReportSheet] = useState(false)
   const [showScanQrModal, setShowScanQrModal] = useState(false)
   const [showCekKlaimModal, setShowCekKlaimModal] = useState(false)
+  const [showAiMatchModal, setShowAiMatchModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
 
   const filteredItems = useMemo(() => {
@@ -50,6 +52,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
       setShowScanQrModal(true)
     } else if (title === 'Cek Status Klaim') {
       setShowCekKlaimModal(true)
+    } else if (title === 'Pencocokan AI Multimodal') {
+      setShowAiMatchModal(true)
     } else {
       setActiveActionModal(title)
     }
@@ -159,7 +163,12 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
         <BottomNav
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab)
+            if (tab === 'cocok-ai') {
+              setShowAiMatchModal(true)
+            }
+          }}
           onPlusClick={() => setShowQuickReportSheet(true)}
         />
 
@@ -269,6 +278,15 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               ? 'Gerbang Barat'
               : 'Lab Terpadu'
             setSearchQuery(query)
+          }}
+        />
+
+        {/* Modal Radar AI Match */}
+        <AiMatchModal
+          isOpen={showAiMatchModal}
+          onClose={() => setShowAiMatchModal(false)}
+          onClaimSuccess={() => {
+            setShowCekKlaimModal(true)
           }}
         />
       </div>

@@ -1,4 +1,4 @@
-import type { LostFoundItem, ItemCategory, PosSatpamInfo, ClaimTicket } from '../types/lostFound'
+import type { LostFoundItem, ItemCategory, PosSatpamInfo, ClaimTicket, AiMatchItem } from '../types/lostFound'
 
 export const INITIAL_ITEMS: LostFoundItem[] = [
   {
@@ -182,6 +182,81 @@ export const INITIAL_CLAIM_TICKETS: ClaimTicket[] = [
         desc: 'Telah diserahkan fisik pada 18 Nov 2026, 14:10 WIB',
         isDone: true,
         isCurrent: false,
+      },
+    ],
+  },
+]
+
+export const INITIAL_AI_MATCHES: AiMatchItem[] = [
+  {
+    id: 'aimatch-1',
+    lostItemTitle: 'TWS Soundcore R50i Hitam (Milik Anda)',
+    lostItemImageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    foundItemTitle: 'TWS Soundcore Hitam Ditemukan di Musholla',
+    foundItemImageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    foundLocation: 'Musholla Lantai 2 FST',
+    custodyPos: 'Pos Satpam Utama Lobby FST',
+    matchScore: 94,
+    timeAgo: 'Ditemukan 2 jam lalu',
+    status: 'unresolved',
+    evidenceList: [
+      {
+        factor: 'Kemiripan Visual (Vision Model)',
+        description: 'Bentuk case oval matte & warna hitam 98% identik',
+        scorePercent: 98,
+      },
+      {
+        factor: 'Kuis Rahasia (Zero-Knowledge)',
+        description: 'Stiker logo di dalam case earbud sesuai dengan laporan Anda',
+        scorePercent: 95,
+      },
+      {
+        factor: 'Kedekatan Rute & Waktu',
+        description: 'Ditemukan di Musholla Lt. 2, sejalur dengan rute kuliah terakhir',
+        scorePercent: 90,
+      },
+    ],
+  },
+  {
+    id: 'aimatch-2',
+    lostItemTitle: 'TWS Soundcore R50i Hitam (Milik Anda)',
+    lostItemImageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    foundItemTitle: 'Earphone Wireless Hitam Tanpa Case',
+    foundItemImageUrl: 'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?q=80&w=600&auto=format&fit=crop',
+    foundLocation: 'Selasar Depan Lab Komputer 3',
+    custodyPos: 'Pos Satpam Gedung Lab Terpadu',
+    matchScore: 76,
+    timeAgo: 'Ditemukan kemarin sore',
+    status: 'unresolved',
+    evidenceList: [
+      {
+        factor: 'Kemiripan Visual',
+        description: 'Warna hitam serupa namun tipe earbud berbeda model',
+        scorePercent: 75,
+      },
+      {
+        factor: 'Lokasi',
+        description: 'Ditemukan di selasar lab praktikum FST',
+        scorePercent: 80,
+      },
+    ],
+  },
+  {
+    id: 'aimatch-3',
+    lostItemTitle: 'TWS Soundcore R50i Hitam (Milik Anda)',
+    lostItemImageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    foundItemTitle: 'Casing Earphone Hitam Kosong',
+    foundItemImageUrl: 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?q=80&w=600&auto=format&fit=crop',
+    foundLocation: 'Meja Diskusi Kantin Saintek',
+    custodyPos: 'Pos Satpam Gerbang Barat',
+    matchScore: 58,
+    timeAgo: 'Ditemukan 3 hari lalu',
+    status: 'unresolved',
+    evidenceList: [
+      {
+        factor: 'Merek Berbeda',
+        description: 'Bentuk dimensi case lebih pipih dari Soundcore R50i',
+        scorePercent: 55,
       },
     ],
   },
