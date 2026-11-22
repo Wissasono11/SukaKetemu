@@ -26,6 +26,7 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
       ? 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?q=80&w=600&auto=format&fit=crop'
       : 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop'
   )
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [hasRefPhoto, setHasRefPhoto] = useState(!isFound)
   const [isPrivacyBlur, setIsPrivacyBlur] = useState(true)
   const [timeLost, setTimeLost] = useState('Hari ini, ~14:15 WIB setelah kuliah')
@@ -102,6 +103,8 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
               isFound={isFound}
               photoUrl={photoUrl}
               onPhotoChange={setPhotoUrl}
+              photoFile={photoFile}
+              onPhotoFileChange={setPhotoFile}
               hasRefPhoto={hasRefPhoto}
               onHasRefPhotoChange={setHasRefPhoto}
               isPrivacyBlur={isPrivacyBlur}

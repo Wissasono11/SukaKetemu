@@ -100,3 +100,26 @@ export interface AiMatchItem {
   evidenceList: AiMatchEvidence[]
   status: 'unresolved' | 'claimed' | 'rejected'
 }
+
+export interface ReportFormData {
+  reportType: ReportType
+  photoUrl: string
+  photoFile?: File | null
+  compressionStats?: {
+    originalSize: number
+    compressedSize: number
+    percentSaved: number
+  } | null
+  isPrivacyBlur: boolean
+  timeLost?: string
+  gedung: string
+  lantai: string
+  ruangan: string
+  category: ItemCategory
+  title: string
+  description: string
+  custodyStatus: 'satpam' | 'penemu'
+  posSatpam: string
+  secretFeature?: string
+  contactPhone: string
+}
