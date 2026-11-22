@@ -91,17 +91,20 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
             <button
               type="button"
               onClick={() => handleCopyOtp(ticket.otpCode)}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all min-h-[36px]"
+              aria-label={`Salin kode OTP ${ticket.otpCode}`}
               title="Klik untuk menyalin kode"
             >
               <span className="font-mono text-base font-black tracking-[0.3em] text-[#155E38]">
                 {ticket.otpCode.split('').join(' ')}
               </span>
-              {copiedOtp ? (
-                <Check className="w-3.5 h-3.5 text-[#155E38]" />
-              ) : (
-                <Copy className="w-3.5 h-3.5 text-slate-400" />
-              )}
+              <span role="status" aria-live="polite" className="inline-flex items-center">
+                {copiedOtp ? (
+                  <Check className="w-3.5 h-3.5 text-[#155E38]" aria-hidden="true" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                )}
+              </span>
             </button>
           </div>
 

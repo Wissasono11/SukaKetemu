@@ -60,4 +60,20 @@
     background-color: #F8FAFC;
     color: #14261B;
   }
+  /* Modern Web Guidance: Balanced heading typography and orphan-free body text */
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+  p, blockquote, .pretty-text {
+    text-wrap: pretty;
+  }
+
+  /* Modern Web Guidance: Prevent background scroll-chaining during modal interactions */
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+  dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
 }

@@ -53,7 +53,7 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-200">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto overscroll-contain p-5 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-200">
         {/* Header Modal */}
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -200,10 +200,13 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
               <button
                 type="button"
                 onClick={handleShare}
-                className="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#44574B] flex items-center justify-center gap-1.5 transition-colors"
+                aria-label={copied ? 'Tautan item telah disalin ke clipboard' : 'Bagikan info tautan item'}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#44574B] flex items-center justify-center gap-1.5 transition-colors min-h-[38px]"
               >
-                <Share2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>{copied ? 'Tautan Disalin!' : 'Bagikan Info'}</span>
+                <Share2 className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />
+                <span role="status" aria-live="polite">
+                  {copied ? 'Tautan Disalin!' : 'Bagikan Info'}
+                </span>
               </button>
 
               <button
