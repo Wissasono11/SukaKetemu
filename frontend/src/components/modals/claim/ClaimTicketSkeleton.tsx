@@ -37,10 +37,16 @@ export const ClaimTicketSkeleton: React.FC = () => {
             <div className="w-24 h-2.5 rounded bg-slate-100 mt-2" />
           </div>
 
-          {/* OTP Code Silhouette */}
+          {/* OTP Code Silhouette (6-Digit & TTL Badge) */}
           <div className="flex flex-col items-center gap-1.5 w-full">
-            <div className="w-32 h-2.5 rounded bg-slate-100" />
-            <div className="w-36 h-8 rounded-xl bg-slate-200/80" />
+            <div className="flex items-center justify-between w-full px-1">
+              <div className="w-36 h-2.5 rounded bg-slate-100" />
+              <div className="w-16 h-3.5 rounded-full bg-slate-200" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-44 h-9 rounded-xl bg-slate-200/80" />
+              <div className="w-9 h-9 rounded-xl bg-slate-100" />
+            </div>
           </div>
 
           {/* Security Instruction Box Silhouette */}

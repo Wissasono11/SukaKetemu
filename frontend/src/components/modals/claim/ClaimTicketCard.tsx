@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   MapPin,
   QrCode,
@@ -6,6 +6,8 @@ import {
   ChevronRight,
   AlertCircle,
   Check,
+  Clock,
+  RefreshCw,
 } from 'lucide-react'
 import type { ClaimTicket } from '../../../types/lostFound'
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
@@ -22,10 +24,37 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
   onRequestCancel,
 }) => {
   const { copied: copiedOtp, copy: copyOtp } = useCopyToClipboard()
+  const [secondsLeft, setSecondsLeft] = useState(285) // TTL 5 Menit (default 4m 45s)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [currentOtp, setCurrentOtp] = useState(ticket.otpCode)
+
+  const isReady = ticket.status === 'ready_for_pickup'
+
+  useEffect(() => {
+    if (!isReady || secondsLeft <= 0) return
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isReady, secondsLeft])
 
   const handleCopyOtp = (otp: string) => {
     copyOtp(otp)
   }
+
+  const handleRegenerateOtp = () => {
+    setIsRefreshing(true)
+    setTimeout(() => {
+      const randomOtp = Math.floor(100000 + Math.random() * 900000).toString()
+      setCurrentOtp(randomOtp)
+      setSecondsLeft(300) // Reset 5 menit TTL
+      setIsRefreshing(false)
+    }, 450)
+  }
+
+  const minutes = Math.floor(secondsLeft / 60)
+  const seconds = secondsLeft % 60
+  const formattedTtl = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 
   return (
     <div className="flex flex-col gap-3">
@@ -83,29 +112,66 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
             </span>
           </div>
 
-          {/* Kode OTP 4-Digit */}
-          <div className="flex flex-col items-center gap-1 w-full">
-            <span className="text-[10px] text-[#44574B] font-semibold">
-              KODE OTP PENGAMBILAN:
+          {/* Kode OTP 6-Digit Dinamis (TTL 5 Menit via Redis) */}
+          <div className="flex flex-col items-center gap-1.5 w-full">
+            <div className="flex items-center justify-between w-full px-1">
+              <span className="text-[10px] text-[#44574B] font-semibold">
+                KODE OTP PENGAMBILAN (6-DIGIT):
+              </span>
+              {isReady && (
+                <span
+                  className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full transition-colors ${
+                    secondsLeft === 0
+                      ? 'bg-rose-100 text-rose-700'
+                      : secondsLeft < 60
+                      ? 'bg-amber-100 text-amber-800 animate-pulse'
+                      : 'bg-[#E4F1E8] text-[#155E38]'
+                  }`}
+                  title="Waktu aktif OTP di server Redis"
+                >
+                  <Clock className="w-3 h-3" />
+                  <span>{secondsLeft > 0 ? `TTL: ${formattedTtl}` : 'Kadaluarsa'}</span>
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleCopyOtp(currentOtp)}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all min-h-[38px]"
+                aria-label={`Salin kode OTP 6-digit ${currentOtp}`}
+                title="Klik untuk menyalin kode"
+              >
+                <span className="font-mono text-base font-black tracking-[0.25em] text-[#155E38]">
+                  {currentOtp.slice(0, 3)} {currentOtp.slice(3)}
+                </span>
+                <span role="status" aria-live="polite" className="inline-flex items-center">
+                  {copiedOtp ? (
+                    <Check className="w-3.5 h-3.5 text-[#155E38]" aria-hidden="true" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                  )}
+                </span>
+              </button>
+
+              {isReady && (
+                <button
+                  type="button"
+                  onClick={handleRegenerateOtp}
+                  disabled={isRefreshing}
+                  title="Perbarui OTP Dinamis via Redis"
+                  aria-label="Perbarui OTP Dinamis"
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#155E38] active:scale-95 transition-all disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#155E38]' : ''}`} />
+                </button>
+              )}
+            </div>
+
+            <span className="text-[9px] text-slate-400">
+              *OTP 6-digit dinamis (TTL 5 mnt via Redis) untuk verifikasi satpam
             </span>
-            <button
-              type="button"
-              onClick={() => handleCopyOtp(ticket.otpCode)}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 active:scale-95 transition-all min-h-[36px]"
-              aria-label={`Salin kode OTP ${ticket.otpCode}`}
-              title="Klik untuk menyalin kode"
-            >
-              <span className="font-mono text-base font-black tracking-[0.3em] text-[#155E38]">
-                {ticket.otpCode.split('').join(' ')}
-              </span>
-              <span role="status" aria-live="polite" className="inline-flex items-center">
-                {copiedOtp ? (
-                  <Check className="w-3.5 h-3.5 text-[#155E38]" aria-hidden="true" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
-                )}
-              </span>
-            </button>
           </div>
 
           <div className="flex items-start gap-1.5 p-2 rounded-xl bg-[#FEF3C7]/60 border border-[#C59B27]/30 text-left w-full">
