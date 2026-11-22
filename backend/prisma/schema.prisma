@@ -1,0 +1,173 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+enum Role {
+  OWNER
+  FINDER
+  SATPAM
+  ADMIN
+}
+
+enum ReportType {
+  FOUND
+  LOST
+}
+
+enum ItemCategory {
+  ELEKTRONIK
+  DOKUMEN_KTM
+  TAS_DOMPET
+  AKSESORIS_PRIBADI
+  BOTOL_MINUM
+  PERLENGKAPAN_IBADAH
+  LAINNYA
+}
+
+enum CustodyStatus {
+  DITITIPKAN_POS
+  DIBAWA_PENEMU
+}
+
+enum VectorStatus {
+  PENDING_VECTOR
+  COMPLETED
+}
+
+enum ReportStatus {
+  OPEN
+  IN_VERIFICATION
+  READY_FOR_HANDOVER
+  SELESAI
+}
+
+enum ClaimStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  COMPLETED
+}
+
+// ==========================================
+// MODELS / TABEL DATABASE
+// ==========================================
+
+model User {
+  id             String   @id @default(uuid())
+  ssoId          String   @unique
+  name           String
+  email          String   @unique
+  phone          String?  // Kontak terproteksi (hanya dibuka setelah klaim lolos)
+  role           Role     @default(OWNER)
+
+  reports        Report[] @relation("UserReports")
+  claims         Claim[]  @relation("ClaimantClaims")
+  verifiedClaims Claim[]  @relation("HandoverVerifier")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Building {
+  id     String  @id @default(uuid())
+  code   String  @unique // Contoh: "FST-UTAMA"
+  name   String          // Contoh: "Gedung Kuliah Terpadu FST"
+  floors Floor[]
+}
+
+model Floor {
+  id         String   @id @default(uuid())
+  number     Int
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  rooms      Room[]
+
+  @@unique([buildingId, number])
+}
+
+model Room {
+  id             String   @id @default(uuid())
+  name           String
+  isSecurity     Boolean  @default(false) // true = Titik Pos Satpam
+  qrCodeToken    String   @unique         // Payload stiker QR Checkpoint
+  floorId        String
+  floor          Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
+
+  incidentReports Report[] @relation("IncidentLocation")
+  custodyReports  Report[] @relation("CustodyLocation")
+}
+
+model Report {
+  id                     String                      @id @default(uuid())
+  type                   ReportType
+  category               ItemCategory
+  title                  String
+  description            String?
+  incidentTime           DateTime                    @default(now()) // Acuan bobot S_time
+
+  // Status keberadaan barang temuan (FR-02.1)
+  custodyStatus          CustodyStatus?
+  finderContact          String?                     // Kontak alternatif penemu jika DIBAWA_PENEMU
+
+  // Keamanan & Privasi UU PDP (FR-02.2 & FR-05.1)
+  secretFeatureQuestion  String?                     // Pertanyaan verifikasi untuk pemohon klaim
+  secretFeatureEncrypted String?                     // Jawaban ciri rahasia terenkripsi AES
+  publicImgUrl           String?                     // URL R2 Public Bucket (Gaussian Blur)
+  privateImgUrl          String?                     // URL R2 Private Bucket (Asli)
+
+  // AI Multimodal & Fallback (FR-04.1 s.d. 4.4)
+  vectorStatus           VectorStatus                @default(PENDING_VECTOR)
+  embedding              Unsupported("vector(512)")? // Vektor 512-d OpenCLIP/SigLIP
+
+  status                 ReportStatus                @default(OPEN)
+
+  // Relasi Pelapor & Titik Lokasi
+  userId                 String
+  user                   User                        @relation("UserReports", fields: [userId], references: [id])
+
+  roomId                 String                      // Titik lokasi ditemukan / perkiraan hilang
+  room                   Room                        @relation("IncidentLocation", fields: [roomId], references: [id])
+
+  custodyRoomId          String?                     // Titik Pos Satpam penitipan / area gedung penemu
+  custodyRoom            Room?                       @relation("CustodyLocation", fields: [custodyRoomId], references: [id])
+
+  claims                 Claim[]
+
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+
+  @@index([type, status, category])
+  @@index([roomId])
+  @@index([incidentTime])
+}
+
+model Claim {
+  id              String      @id @default(uuid())
+  reportId        String
+  report          Report      @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  claimantId      String      // Pemilik barang (Owner) yang mengajukan klaim
+  claimant        User        @relation("ClaimantClaims", fields: [claimantId], references: [id])
+
+  challengeAnswer String      // Jawaban pemohon atas Secret Feature (FR-05.2)
+  status          ClaimStatus @default(PENDING)
+
+  // Handshake Serah Terima QR/OTP Dinamis (FR-05.3)
+  qrTicketToken   String?     @unique // Token tiket QR yang terhubung ke OTP 6-digit di Redis
+  verifiedById    String?     // Petugas Pos (SATPAM) atau Penemu (FINDER) yang memindai QR/OTP
+  verifiedBy      User?       @relation("HandoverVerifier", fields: [verifiedById], references: [id])
+  handedOverAt    DateTime?   // Timestamp serah terima selesai (Audit Trail)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([reportId, status])
+}
