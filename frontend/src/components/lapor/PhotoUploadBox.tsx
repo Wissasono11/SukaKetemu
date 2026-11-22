@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react'
 import {
   Camera,
   EyeOff,
-  Sparkles,
   Image as ImageIcon,
   Loader2,
   CheckCircle2,
@@ -145,10 +144,12 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
 
             {/* Privacy Overlay (Found only) */}
             {!isCompressing && isFound && isPrivacyBlur && (
-              <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 text-center text-white">
-                <EyeOff className="w-6 h-6 mb-1" />
-                <span className="text-xs font-bold">Privasi Dilindungi (UU PDP)</span>
-                <span className="text-[10px] text-white/90">Wajah/nomor disamarkan otomatis</span>
+              <div className="absolute inset-0 bg-black/45 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center text-white">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mb-1.5 border border-white/20">
+                  <EyeOff className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-xs font-bold leading-tight">Data Pribadi Disamarkan</span>
+                <span className="text-[10px] text-white/90 mt-0.5">Sesuai UU PDP No. 27/2022</span>
               </div>
             )}
 
@@ -212,9 +213,9 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
                   onChange={(e) => onPrivacyBlurToggle(e.target.checked)}
                   className="w-3.5 h-3.5 rounded text-[#155E38] accent-[#155E38]"
                 />
-                <span className="text-xs font-semibold text-[#44574B] flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-[#C59B27]" />
-                  Blur Privasi Wajah/Data
+                <span className="text-xs font-semibold text-[#44574B] flex items-center gap-1.5">
+                  <EyeOff className="w-3.5 h-3.5 text-[#155E38]" />
+                  Samarkan Wajah &amp; Data Pribadi
                 </span>
               </label>
             ) : (
