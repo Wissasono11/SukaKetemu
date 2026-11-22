@@ -148,8 +148,8 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mb-1.5 border border-white/20">
                   <EyeOff className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xs font-bold leading-tight">Data Pribadi Disamarkan</span>
-                <span className="text-[10px] text-white/90 mt-0.5">Sesuai UU PDP No. 27/2022</span>
+                <span className="text-xs font-bold leading-tight">Foto Barang Disamarkan</span>
+                <span className="text-[10px] text-white/90 mt-0.5">Disamarkan di beranda publik (UU PDP)</span>
               </div>
             )}
 
@@ -215,7 +215,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
                 />
                 <span className="text-xs font-semibold text-[#44574B] flex items-center gap-1.5">
                   <EyeOff className="w-3.5 h-3.5 text-[#155E38]" />
-                  Samarkan Wajah &amp; Data Pribadi
+                  Samarkan Foto Barang
                 </span>
               </label>
             ) : (
