@@ -56,7 +56,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   const [temp, setTemp] = useState<FilterCriteria>(currentCriteria)
 
   useEffect(() => {
-    if (isOpen) setTemp(currentCriteria)
+    setTemp(currentCriteria)
   }, [isOpen, currentCriteria])
 
   const activeCount = [temp.category, temp.posId, temp.custody, temp.dateRange].filter(
@@ -80,10 +80,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     { id: 'dibawa_penemu', name: 'Masih Dibawa Penemu', detail: 'Belum diserahkan ke pos satpam', icon: User },
   ]
 
-  const handleApply = () => {
-    onApply(temp)
-    onClose()
-  }
+  const segmentBtnClass = (active: boolean) =>
+    `py-2 rounded-lg text-xs font-semibold transition-all ${
+      active ? 'bg-white text-[#0F4A2C] shadow-xs font-bold' : 'text-[#44574B] hover:text-[#14261B]'
+    }`
 
   return (
     <div
@@ -215,11 +215,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     key={opt.id}
                     type="button"
                     onClick={() => setTemp((prev) => ({ ...prev, custody: opt.id }))}
-                    className={`py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                      isSelected
-                        ? 'bg-white text-[#0F4A2C] shadow-xs font-bold'
-                        : 'text-[#44574B] hover:text-[#14261B]'
-                    }`}
+                    className={`${segmentBtnClass(isSelected)} flex items-center justify-center gap-1`}
                   >
                     {CustodyIcon && <CustodyIcon className="w-3 h-3 text-[#155E38]" />}
                     {opt.label}
@@ -236,23 +232,16 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               <label className="text-xs font-bold text-[#14261B]">Waktu Pelaporan</label>
             </div>
             <div className="grid grid-cols-5 gap-1 bg-slate-100 p-1 rounded-xl text-center">
-              {DATE_OPTIONS.map((opt) => {
-                const isSelected = temp.dateRange === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setTemp((prev) => ({ ...prev, dateRange: opt.id }))}
-                    className={`py-2 rounded-lg text-xs font-semibold transition-all truncate ${
-                      isSelected
-                        ? 'bg-white text-[#0F4A2C] shadow-xs font-bold'
-                        : 'text-[#44574B] hover:text-[#14261B]'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
+              {DATE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setTemp((prev) => ({ ...prev, dateRange: opt.id }))}
+                  className={`${segmentBtnClass(temp.dateRange === opt.id)} truncate`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -266,17 +255,22 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               onReset()
               onClose()
             }}
-            className="py-3 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all"
+            className="py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all"
           >
             Reset
           </button>
-
           <button
             type="button"
-            onClick={handleApply}
-            className="flex-1 py-3 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] active:scale-[0.99] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+            onClick={() => {
+              onApply(temp)
+              onClose()
+            }}
+            className="flex-1 py-3 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] text-white text-xs font-bold shadow-md shadow-[#155E38]/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
           >
-            <span>Terapkan ({previewMatches.length} Barang Ditemukan)</span>
+            <span>Terapkan Filter</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[11px] font-semibold">
+              {previewMatches.length} Hasil
+            </span>
           </button>
         </div>
       </div>

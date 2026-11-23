@@ -26,9 +26,7 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true)
-      const timer = setTimeout(() => {
-        setIsLoading(false)
-      }, 350)
+      const timer = setTimeout(() => setIsLoading(false), 350)
       return () => clearTimeout(timer)
     }
   }, [isOpen, activeTab])
@@ -48,11 +46,7 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
       setTickets((prev) =>
         prev.map((t) =>
           t.id === ticketId
-            ? {
-                ...t,
-                status: 'cancelled' as const,
-                statusLabel: 'Dibatalkan oleh Pengguna',
-              }
+            ? { ...t, status: 'cancelled' as const, statusLabel: 'Dibatalkan oleh Pengguna' }
             : t
         )
       )
@@ -60,6 +54,24 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
       setCancelModalTicketId(null)
     }, 500)
   }
+
+  const renderEmptyState = (icon: React.ReactNode, title: string, desc: string) => (
+    <div className="py-10 flex flex-col items-center justify-center text-center p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
+      {icon}
+      <p className="text-xs font-bold text-[#14261B]">{title}</p>
+      <p className="text-[11px] text-[#44574B] mt-1 max-w-xs">{desc}</p>
+    </div>
+  )
+
+  const tabBtnClass = (tab: 'aktif' | 'riwayat') =>
+    `flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+      activeTab === tab ? 'bg-white text-[#155E38] shadow-xs font-bold' : 'text-[#44574B] hover:text-[#14261B]'
+    }`
+
+  const tabBadgeClass = (tab: 'aktif' | 'riwayat') =>
+    `text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+      activeTab === tab ? 'bg-[#155E38] text-white' : 'bg-slate-200 text-[#44574B]'
+    }`
 
   return (
     <div
@@ -92,61 +104,27 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
 
         {/* Tab Filter: Aktif vs Riwayat */}
         <div className="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => setActiveTab('aktif')}
-            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'aktif'
-                ? 'bg-white text-[#155E38] shadow-xs font-bold'
-                : 'text-[#44574B] hover:text-[#14261B]'
-            }`}
-          >
+          <button type="button" onClick={() => setActiveTab('aktif')} className={tabBtnClass('aktif')}>
             <span>Klaim Aktif</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'aktif'
-                  ? 'bg-[#155E38] text-white'
-                  : 'bg-slate-200 text-[#44574B]'
-              }`}
-            >
-              {activeTickets.length}
-            </span>
+            <span className={tabBadgeClass('aktif')}>{activeTickets.length}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab('riwayat')}
-            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-              activeTab === 'riwayat'
-                ? 'bg-white text-[#155E38] shadow-xs font-bold'
-                : 'text-[#44574B] hover:text-[#14261B]'
-            }`}
-          >
+          <button type="button" onClick={() => setActiveTab('riwayat')} className={tabBtnClass('riwayat')}>
             <span>Riwayat Selesai</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                activeTab === 'riwayat'
-                  ? 'bg-[#155E38] text-white'
-                  : 'bg-slate-200 text-[#44574B]'
-              }`}
-            >
-              {historyTickets.length}
-            </span>
+            <span className={tabBadgeClass('riwayat')}>{historyTickets.length}</span>
           </button>
         </div>
 
-        {/* Konten Tab Aktif / Riwayat dengan Skeleton State */}
+        {/* Konten Tab Aktif / Riwayat */}
         {isLoading ? (
           <ClaimTicketSkeleton />
         ) : activeTab === 'aktif' ? (
           activeTickets.length === 0 ? (
-            <div className="py-10 flex flex-col items-center justify-center text-center p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
-              <FileCheck className="w-8 h-8 text-slate-400 mb-2" />
-              <p className="text-xs font-bold text-[#14261B]">Tidak Ada Klaim Aktif</p>
-              <p className="text-[11px] text-[#44574B] mt-1 max-w-xs">
-                Anda belum mengajukan klaim barang. Jika menemukan barang Anda di feed, klik kartu dan pilih "Klaim Barang Ini".
-              </p>
-            </div>
+            renderEmptyState(
+              <FileCheck className="w-8 h-8 text-slate-400 mb-2" />,
+              'Tidak Ada Klaim Aktif',
+              'Anda belum mengajukan klaim barang. Jika menemukan barang Anda di feed, klik kartu dan pilih "Klaim Barang Ini".'
+            )
           ) : (
             activeTickets.map((ticket) => (
               <ClaimTicketCard
@@ -160,23 +138,18 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
               />
             ))
           )
-        ) : (
-          /* Konten Tab Riwayat */
-          historyTickets.length === 0 ? (
-            <div className="py-10 flex flex-col items-center justify-center text-center p-4 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
-              <CheckCircle2 className="w-8 h-8 text-slate-400 mb-2" />
-              <p className="text-xs font-bold text-[#14261B]">Belum Ada Riwayat Klaim</p>
-              <p className="text-[11px] text-[#44574B] mt-1 max-w-xs">
-                Barang yang sudah berhasil Anda ambil akan tercatat rapi di sini.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {historyTickets.map((ticket) => (
-                <ClaimHistoryCard key={ticket.id} ticket={ticket} />
-              ))}
-            </div>
+        ) : historyTickets.length === 0 ? (
+          renderEmptyState(
+            <CheckCircle2 className="w-8 h-8 text-slate-400 mb-2" />,
+            'Belum Ada Riwayat Klaim',
+            'Barang yang sudah berhasil Anda ambil akan tercatat rapi di sini.'
           )
+        ) : (
+          <div className="flex flex-col gap-3">
+            {historyTickets.map((ticket) => (
+              <ClaimHistoryCard key={ticket.id} ticket={ticket} />
+            ))}
+          </div>
         )}
 
         {/* Modal Konfirmasi Batal */}
@@ -207,9 +180,9 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
                   type="button"
                   disabled={isCancelling}
                   onClick={() => setCancelModalTicketId(null)}
-                  className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold hover:bg-slate-200"
+                  className="py-2 px-3 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
                 >
-                  Batal
+                  Kembali
                 </button>
               </div>
             </div>

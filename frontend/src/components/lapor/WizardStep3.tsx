@@ -24,6 +24,26 @@ interface WizardStep3Props {
   onPrev: () => void
 }
 
+const CUSTODY_ITEMS = [
+  {
+    id: 'satpam' as const,
+    title: 'Dititipkan di Pos Satpam',
+    badge: '(Dianjurkan)',
+    desc: 'Aman dijaga satpam kampus. Pemilik mengambil dengan verifikasi resmi.',
+    activeClass: 'bg-[#E4F1E8] border-[#155E38] ring-1 ring-[#155E38]',
+    accentColor: '#155E38',
+    textColor: 'text-[#0F4A2C]',
+  },
+  {
+    id: 'penemu' as const,
+    title: 'Masih Dibawa Penemu',
+    desc: 'Serah terima memakai Tiket QR Interaktif di lokasi kampus yang disepakati.',
+    activeClass: 'bg-[#FEF3C7] border-[#C59B27] ring-1 ring-[#C59B27]',
+    accentColor: '#C59B27',
+    textColor: 'text-[#92400E]',
+  },
+]
+
 export const WizardStep3: React.FC<WizardStep3Props> = ({
   isFound,
   custodyStatus,
@@ -48,74 +68,50 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
           </span>
 
           <div className="flex flex-col gap-2">
-            <label
-              onClick={() => onCustodyChange('satpam')}
-              className={`p-3 rounded-xl cursor-pointer border transition-all ${
-                custodyStatus === 'satpam'
-                  ? 'bg-[#E4F1E8] border-[#155E38] ring-1 ring-[#155E38]'
-                  : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-start gap-2">
-                <input
-                  type="radio"
-                  name="custody"
-                  checked={custodyStatus === 'satpam'}
-                  onChange={() => onCustodyChange('satpam')}
-                  className="w-4 h-4 text-[#155E38] accent-[#155E38] mt-0.5"
-                />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-[#0F4A2C]">
-                    Dititipkan di Pos Satpam <span className="text-[11px] font-normal text-[#155E38]">(Dianjurkan)</span>
-                  </span>
-                  <span className="text-[11px] text-[#44574B] mt-0.5">
-                    Aman dijaga satpam kampus. Pemilik mengambil dengan verifikasi resmi.
-                  </span>
-                </div>
-              </div>
+            {CUSTODY_ITEMS.map((item) => {
+              const isSelected = custodyStatus === item.id
+              return (
+                <label
+                  key={item.id}
+                  onClick={() => onCustodyChange(item.id)}
+                  className={`p-3 rounded-xl cursor-pointer border transition-all ${
+                    isSelected ? item.activeClass : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="radio"
+                      name="custody"
+                      checked={isSelected}
+                      onChange={() => onCustodyChange(item.id)}
+                      className="w-4 h-4 mt-0.5"
+                      style={{ accentColor: item.accentColor }}
+                    />
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-semibold ${item.textColor}`}>
+                        {item.title} {item.badge && <span className="text-[11px] font-normal text-[#155E38]">{item.badge}</span>}
+                      </span>
+                      <span className="text-[11px] text-[#44574B] mt-0.5">{item.desc}</span>
+                    </div>
+                  </div>
 
-              {custodyStatus === 'satpam' && (
-                <div className="mt-2 pt-2 border-t border-[#155E38]/20 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-[#0F4A2C]">Pilih Pos:</span>
-                  <select
-                    value={posSatpam}
-                    onChange={(e) => onPosSatpamChange(e.target.value)}
-                    className="bg-white text-xs font-semibold text-[#0F4A2C] rounded-lg p-1 border border-[#155E38]/30"
-                  >
-                    <option value="Pos Satpam Utama FST (Lobby)">Pos Lobby FST</option>
-                    <option value="Pos Gerbang Barat">Gerbang Barat</option>
-                    <option value="Pos Gerbang Timur">Gerbang Timur</option>
-                  </select>
-                </div>
-              )}
-            </label>
-
-            <label
-              onClick={() => onCustodyChange('penemu')}
-              className={`p-3 rounded-xl cursor-pointer border transition-all ${
-                custodyStatus === 'penemu'
-                  ? 'bg-[#FEF3C7] border-[#C59B27] ring-1 ring-[#C59B27]'
-                  : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-start gap-2">
-                <input
-                  type="radio"
-                  name="custody"
-                  checked={custodyStatus === 'penemu'}
-                  onChange={() => onCustodyChange('penemu')}
-                  className="w-4 h-4 text-[#C59B27] accent-[#C59B27] mt-0.5"
-                />
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-[#92400E]">
-                    Masih Dibawa Penemu
-                  </span>
-                  <span className="text-[11px] text-[#44574B] mt-0.5">
-                    Serah terima memakai Tiket QR Interaktif di lokasi kampus yang disepakati.
-                  </span>
-                </div>
-              </div>
-            </label>
+                  {item.id === 'satpam' && isSelected && (
+                    <div className="mt-2 pt-2 border-t border-[#155E38]/20 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-[#0F4A2C]">Pilih Pos:</span>
+                      <select
+                        value={posSatpam}
+                        onChange={(e) => onPosSatpamChange(e.target.value)}
+                        className="bg-white text-xs font-semibold text-[#0F4A2C] rounded-lg p-1 border border-[#155E38]/30"
+                      >
+                        <option value="Pos Satpam Utama FST (Lobby)">Pos Lobby FST</option>
+                        <option value="Pos Gerbang Barat">Gerbang Barat</option>
+                        <option value="Pos Gerbang Timur">Gerbang Timur</option>
+                      </select>
+                    </div>
+                  )}
+                </label>
+              )
+            })}
           </div>
         </div>
       ) : (
@@ -189,15 +185,10 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
               <CheckCircle className="w-4 h-4 text-white" />
               <span>{isFound ? 'Berhasil! Laporan Terpasang di Sistem' : 'Berhasil! Laporan Telah Terbit'}</span>
             </>
-          ) : isFound ? (
-            <>
-              <Send className="w-4 h-4 text-white" />
-              <span>Kirim Laporan Temuan</span>
-            </>
           ) : (
             <>
               <Send className="w-4 h-4 text-white" />
-              <span>Kirim &amp; Terbitkan Laporan Hilang</span>
+              <span>{isFound ? 'Kirim Laporan Temuan' : 'Kirim & Terbitkan Laporan Hilang'}</span>
             </>
           )}
         </button>
@@ -205,9 +196,10 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
         <button
           type="button"
           onClick={onPrev}
-          className="py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-700 active:scale-98 transition-all"
+          disabled={isSubmitting}
+          className="w-full py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
         >
-          Kembali ke Detail Barang
+          Kembali ke Langkah Sebelumnya
         </button>
       </div>
     </div>
