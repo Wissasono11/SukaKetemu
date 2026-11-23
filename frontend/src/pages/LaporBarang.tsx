@@ -5,6 +5,7 @@ import { LaporStepper } from '../components/lapor/LaporStepper'
 import { WizardStep1 } from '../components/lapor/WizardStep1'
 import { WizardStep2 } from '../components/lapor/WizardStep2'
 import { WizardStep3 } from '../components/lapor/WizardStep3'
+import { submitReport } from '../services/reportService'
 
 interface LaporBarangProps {
   reportType: ReportType
@@ -61,17 +62,35 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      await submitReport({
+        type: reportType,
+        title,
+        category,
+        description,
+        location: { gedung, lantai, ruangan },
+        custody: custodyStatus === 'satpam' ? 'pos_satpam' : 'dibawa_penemu',
+        posId: posSatpam,
+        secretFeature,
+        contactPhone,
+        timeLost: isFound ? undefined : timeLost,
+        photoFile,
+        isPrivacyBlur,
+      })
       setIsSuccess(true)
       setTimeout(() => {
         if (onSuccess) onSuccess()
         else onBack()
       }, 1200)
-    }, 900)
+    } catch (err) {
+      console.error(err)
+      alert('Gagal mengirim laporan. Silakan coba lagi.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const steps = isFound

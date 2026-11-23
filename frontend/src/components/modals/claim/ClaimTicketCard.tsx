@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
   MapPin,
-  QrCode,
   Copy,
   ChevronRight,
   AlertCircle,
@@ -9,6 +8,7 @@ import {
   Clock,
   RefreshCw,
 } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import type { ClaimTicket } from '../../../types/lostFound'
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
 
@@ -104,8 +104,12 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
         <div className="p-4 pt-2 flex flex-col items-center text-center gap-2.5 bg-white">
           {/* Kotak QR Code */}
           <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs flex flex-col items-center">
-            <div className="w-28 h-28 bg-slate-900 rounded-lg p-2 flex items-center justify-center text-white">
-              <QrCode className="w-24 h-24 text-white" />
+            <div className="w-28 h-28 bg-white rounded-lg p-2 flex items-center justify-center border border-slate-100 shadow-xs">
+              <QRCodeSVG
+                value={`SUKA-TKT:${ticket.ticketNumber}:${currentOtp}`}
+                size={96}
+                level="M"
+              />
             </div>
             <span className="text-[9px] text-slate-400 font-mono mt-1">
               SCANNER RESMI POS SATPAM

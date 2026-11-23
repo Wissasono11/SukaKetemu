@@ -219,7 +219,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
                 </span>
               </label>
             ) : (
-              <span className="text-[10px] text-slate-400">Format: JPEG/PNG &le; 1,5 MB</span>
+              <span className="text-[10px] text-slate-400">Format: JPG atau PNG &le; 1,5 MB</span>
             )}
 
             <button
