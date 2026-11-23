@@ -31,8 +31,8 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   const [isPrivacyBlur, setIsPrivacyBlur] = useState(true)
   const [timeLost, setTimeLost] = useState('Hari ini, ~14:15 WIB setelah kuliah')
   const [gedung, setGedung] = useState('FST (Saintek)')
-  const [lantai, setLantai] = useState('Lantai 2')
-  const [ruangan, setRuangan] = useState('Lab Terpadu 204')
+  const [lantai, setLantai] = useState('Lantai 1')
+  const [ruangan, setRuangan] = useState('Lobby')
 
   // Step 2 State
   const [category, setCategory] = useState('elektronik')

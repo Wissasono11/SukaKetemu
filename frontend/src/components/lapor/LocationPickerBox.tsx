@@ -1,5 +1,7 @@
-import React, { useState } from 'react'
-import { MapPin, Scan } from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { MapPin, Scan, CheckCircle2 } from 'lucide-react'
+import { LocationQrScanner } from './LocationQrScanner'
+import { getGedungList, getLantaiList, getRuanganList } from '../../data/locations'
 
 interface LocationPickerBoxProps {
   isFound: boolean
@@ -11,10 +13,6 @@ interface LocationPickerBoxProps {
   onRuanganChange: (val: string) => void
 }
 
-const BUILDINGS = ['FST (Saintek)', 'FISHUM', 'FEBI', 'FITK', 'Perpustakaan']
-const FLOORS = ['Lantai 1', 'Lantai 2', 'Lantai 3', 'Lantai 4']
-const ROOMS = ['Lab Terpadu 204', 'R. Kuliah 201', 'Selasar Barat', 'Pos Satpam FST']
-
 export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
   isFound,
   gedung,
@@ -25,12 +23,48 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
   onRuanganChange,
 }) => {
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [showQrScanner, setShowQrScanner] = useState(false)
 
-  const handleQuickQr = () => {
-    onGedungChange('FST (Saintek)')
-    onLantaiChange('Lantai 2')
-    onRuanganChange('Lab Terpadu 204')
+  // Notifikasi singkat setelah QR lokasi berhasil dipindai (hilang otomatis)
+  const [scanNotice, setScanNotice] = useState('')
+  const noticeTimer = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    return () => window.clearTimeout(noticeTimer.current)
+  }, [])
+
+  // Daftar pilihan dropdown diambil dari master data lokasi (src/data/locations.ts)
+  const gedungOptions = getGedungList()
+  const lantaiOptions = getLantaiList(gedung)
+  const ruanganOptions = getRuanganList(gedung, lantai)
+
+  // Ganti gedung -> lantai & ruangan ikut menyesuaikan ke pilihan pertama yang tersedia
+  const handleGedungChange = (newGedung: string) => {
+    const newLantai = getLantaiList(newGedung)[0] ?? ''
+    onGedungChange(newGedung)
+    onLantaiChange(newLantai)
+    onRuanganChange(getRuanganList(newGedung, newLantai)[0] ?? '')
   }
+
+  // Ganti lantai -> ruangan ikut menyesuaikan
+  const handleLantaiChange = (newLantai: string) => {
+    onLantaiChange(newLantai)
+    onRuanganChange(getRuanganList(gedung, newLantai)[0] ?? '')
+  }
+
+  const handleLocationScan = useCallback(
+    (location: { id: string; gedung: string; lantai: string; ruangan: string }) => {
+      onGedungChange(location.gedung)
+      onLantaiChange(location.lantai)
+      onRuanganChange(location.ruangan)
+      setShowQrScanner(false)
+
+      setScanNotice(`${location.ruangan} — ${location.gedung}, ${location.lantai}`)
+      window.clearTimeout(noticeTimer.current)
+      noticeTimer.current = window.setTimeout(() => setScanNotice(''), 3500)
+    },
+    [onGedungChange, onLantaiChange, onRuanganChange]
+  )
 
   return (
     <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.03)]">
@@ -42,7 +76,7 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
         {isFound && (
           <button
             type="button"
-            onClick={handleQuickQr}
+            onClick={() => setShowQrScanner(true)}
             className="text-[11px] font-bold text-[#155E38] flex items-center gap-1 hover:underline"
           >
             <Scan className="w-3.5 h-3.5" />
@@ -69,12 +103,22 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
         </button>
       </div>
 
+      {scanNotice && (
+        <div
+          role="status"
+          className="flex items-center gap-2 p-2.5 rounded-xl bg-[#E4F1E8] text-[#0F4A2C] text-xs font-semibold animate-in fade-in slide-in-from-top-1 duration-200"
+        >
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>Lokasi terdeteksi: {scanNotice}</span>
+        </div>
+      )}
+
       {showLocationPicker && (
         <div className="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 mt-1">
           {[
-            { label: 'Gedung', val: gedung, set: onGedungChange, list: BUILDINGS },
-            { label: 'Lantai', val: lantai, set: onLantaiChange, list: FLOORS },
-            { label: 'Ruangan', val: ruangan, set: onRuanganChange, list: ROOMS },
+            { label: 'Gedung', val: gedung, set: handleGedungChange, list: gedungOptions },
+            { label: 'Lantai', val: lantai, set: handleLantaiChange, list: lantaiOptions },
+            { label: 'Ruangan', val: ruangan, set: onRuanganChange, list: ruanganOptions },
           ].map(({ label, val, set, list }) => (
             <div key={label} className="flex flex-col">
               <label className="text-[10px] font-bold text-[#44574B] mb-1">{label}</label>
@@ -92,6 +136,13 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
             </div>
           ))}
         </div>
+      )}
+
+      {showQrScanner && (
+        <LocationQrScanner
+          onScanSuccess={handleLocationScan}
+          onClose={() => setShowQrScanner(false)}
+        />
       )}
     </div>
   )
