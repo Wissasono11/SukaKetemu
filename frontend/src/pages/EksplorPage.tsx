@@ -18,10 +18,6 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
 
   const handleSelectPosFromMap = (posId: string) => {
     setSelectedPosId(posId)
-    const element = document.getElementById(`pos-card-${posId}`)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }
   }
 
   // Calculate items held at pos satpam
