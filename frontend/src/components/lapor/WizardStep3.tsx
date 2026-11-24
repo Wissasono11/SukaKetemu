@@ -74,9 +74,8 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
                 <label
                   key={item.id}
                   onClick={() => onCustodyChange(item.id)}
-                  className={`p-3 rounded-xl cursor-pointer border transition-all ${
-                    isSelected ? item.activeClass : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                  }`}
+                  className={`p-3 rounded-xl cursor-pointer border transition-all ${isSelected ? item.activeClass : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                    }`}
                 >
                   <div className="flex items-start gap-2">
                     <input
@@ -167,13 +166,12 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-3.5 px-4 rounded-xl text-xs font-bold shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 ${
-            isSuccess
-              ? 'bg-[#1B7A43] text-white'
-              : isSubmitting
+          className={`w-full py-3.5 px-4 rounded-xl text-xs font-bold shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 ${isSuccess
+            ? 'bg-[#1B7A43] text-white'
+            : isSubmitting
               ? 'bg-[#155E38]/80 text-white cursor-wait'
               : 'bg-[#155E38] hover:bg-[#0F4A2C] text-white'
-          }`}
+            }`}
         >
           {isSubmitting ? (
             <>

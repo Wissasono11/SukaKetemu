@@ -39,7 +39,7 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
 
   const stopScanner = async () => {
     if (scannerRef.current?.isScanning) {
-      await scannerRef.current.stop().catch(() => {})
+      await scannerRef.current.stop().catch(() => { })
       scannerRef.current.clear()
     }
     scannerRef.current = null
@@ -78,7 +78,7 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 190, height: 190 } },
           (text) => mounted && selectPos(parseQrText(text)),
-          () => {}
+          () => { }
         )
         if (mounted) setIsCameraReady(true)
       } catch (err) {
@@ -102,7 +102,7 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
     try {
       // @ts-expect-error torch constraint
       await scannerRef.current?.applyVideoConstraints({ advanced: [{ torch: next }] })
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -129,9 +129,8 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                 type="button"
                 onClick={toggleTorch}
                 title="Lampu Senter"
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  flashlightOn ? 'bg-[#FEF3C7] text-[#C59B27] ring-2 ring-[#C59B27]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${flashlightOn ? 'bg-[#FEF3C7] text-[#C59B27] ring-2 ring-[#C59B27]' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}
               >
                 <Flashlight className="w-4 h-4" />
               </button>

@@ -7,14 +7,23 @@ import { WizardStep2 } from '../components/lapor/WizardStep2'
 import { WizardStep3 } from '../components/lapor/WizardStep3'
 import { submitReport } from '../services/reportService'
 
+export interface InitialReportLocation {
+  gedung?: string
+  lantai?: string
+  ruangan?: string
+  posSatpam?: string
+}
+
 interface LaporBarangProps {
   reportType: ReportType
+  initialLocation?: InitialReportLocation
   onBack: () => void
   onSuccess?: () => void
 }
 
 export const LaporBarang: React.FC<LaporBarangProps> = ({
   reportType,
+  initialLocation,
   onBack,
   onSuccess,
 }) => {
@@ -31,9 +40,11 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   const [hasRefPhoto, setHasRefPhoto] = useState(!isFound)
   const [isPrivacyBlur, setIsPrivacyBlur] = useState(true)
   const [timeLost, setTimeLost] = useState('Hari ini, ~14:15 WIB setelah kuliah')
-  const [gedung, setGedung] = useState('FST (Saintek)')
-  const [lantai, setLantai] = useState('Lantai 1')
-  const [ruangan, setRuangan] = useState('Lobby')
+  const [gedung, setGedung] = useState(initialLocation?.gedung || 'FST (Saintek)')
+  const [lantai, setLantai] = useState(initialLocation?.lantai || 'Lantai 1')
+  const [ruangan, setRuangan] = useState(
+    initialLocation?.ruangan || (isFound ? 'Pos Satpam' : 'Lobby')
+  )
 
   // Step 2 State
   const [category, setCategory] = useState('elektronik')
@@ -50,7 +61,9 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
 
   // Step 3 State
   const [custodyStatus, setCustodyStatus] = useState<'satpam' | 'penemu'>('satpam')
-  const [posSatpam, setPosSatpam] = useState('Pos Satpam Utama FST (Lobby)')
+  const [posSatpam, setPosSatpam] = useState(
+    initialLocation?.posSatpam || 'Pos Satpam Utama Lobby FST'
+  )
   const [secretFeature, setSecretFeature] = useState(
     isFound
       ? 'Stiker kecil logo HIMATIF di dalam penutup baterai'
