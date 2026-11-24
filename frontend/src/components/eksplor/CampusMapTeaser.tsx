@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { MapPin, RotateCcw } from 'lucide-react'
+import { MapSkeleton } from './MapSkeleton'
 
 interface CampusMapTeaserProps {
   selectedPosId: string | null
@@ -58,6 +59,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
   selectedPosId,
   onSelectPos,
 }) => {
+  const [isMapLoading, setIsMapLoading] = useState(true)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<{ [key: string]: L.Marker }>({})
@@ -74,6 +76,10 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
       attributionControl: true,
       maxZoom: 19,
       minZoom: 16,
+    })
+
+    map.whenReady(() => {
+      setTimeout(() => setIsMapLoading(false), 250)
     })
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -247,6 +253,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
       {/* Real GIS Leaflet Viewport */}
       <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
         <div ref={mapContainerRef} className="w-full h-full z-10" />
+        {isMapLoading && <MapSkeleton />}
 
         <button
           type="button"

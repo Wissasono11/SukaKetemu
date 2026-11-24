@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   X,
   Shield,
@@ -11,6 +11,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Loader2,
+  Image as ImageIcon,
 } from 'lucide-react'
 import type { LostFoundItem } from '../../types/lostFound'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
@@ -28,7 +29,12 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 }) => {
   const [isClaimed, setIsClaimed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isImageLoading, setIsImageLoading] = useState(true)
   const { copied, copy } = useCopyToClipboard()
+
+  useEffect(() => {
+    setIsImageLoading(true)
+  }, [item?.id])
 
   if (!item) return null
 
@@ -88,12 +94,19 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 
         {/* Foto Barang */}
         <div className="relative w-full aspect-video rounded-2xl bg-slate-100 overflow-hidden border border-slate-200">
+          {isImageLoading && (
+            <div className="absolute inset-0 bg-slate-200 animate-pulse flex items-center justify-center z-10">
+              <ImageIcon className="w-8 h-8 text-slate-400/70" />
+            </div>
+          )}
           <img
             src={item.imageUrl}
             alt={item.imageAlt}
-            className={`w-full h-full object-cover ${
-              item.isPrivacySensitive ? 'blur-lg scale-110' : ''
-            }`}
+            onLoad={() => setIsImageLoading(false)}
+            onError={() => setIsImageLoading(false)}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              isImageLoading ? 'opacity-0' : 'opacity-100'
+            } ${item.isPrivacySensitive ? 'blur-lg scale-110' : ''}`}
           />
           {item.isPrivacySensitive && (
             <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center">
