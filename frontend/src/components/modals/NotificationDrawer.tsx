@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   X,
   Radar,
@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Loader2,
 } from 'lucide-react'
+import { NotificationSkeleton } from './NotificationSkeleton'
 
 export interface AppNotification {
   id: string
@@ -36,6 +37,15 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   onSelectNotification,
 }) => {
   const [isMarking, setIsMarking] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsLoading(true)
+      const timer = setTimeout(() => setIsLoading(false), 250)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -119,7 +129,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
         {/* List Notifikasi */}
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <NotificationSkeleton count={4} />
+          ) : notifications.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center text-center p-4">
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
                 <Bell className="w-6 h-6" />

@@ -11,6 +11,7 @@ import type { AiMatchItem } from '../../types/lostFound'
 import { INITIAL_AI_MATCHES } from '../../data/mockItems'
 import { AiMatchHeroCard } from './aimatch/AiMatchHeroCard'
 import { AiMatchAlternativeItem } from './aimatch/AiMatchAlternativeItem'
+import { AiMatchSkeleton } from './aimatch/AiMatchSkeleton'
 
 interface AiMatchModalProps {
   isOpen: boolean
@@ -157,19 +158,7 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
             </div>
 
             {isScanning ? (
-              <div className="py-12 px-4 rounded-2xl bg-white border border-slate-200 flex flex-col items-center justify-center gap-2.5 text-center shadow-2xs animate-pulse">
-                <div className="w-12 h-12 rounded-full bg-[#E4F1E8] flex items-center justify-center text-[#155E38]">
-                  <Radar className="w-6 h-6 animate-pulse" />
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-bold text-[#14261B]">
-                    Memindai Inventaris Kampus...
-                  </span>
-                  <span className="text-[11px] text-[#44574B]">
-                    Mencocokkan kemiripan visual AI dengan pos satpam
-                  </span>
-                </div>
-              </div>
+              <AiMatchSkeleton />
             ) : currentHero ? (
               <div className="flex flex-col gap-4 animate-in fade-in duration-200">
                 {/* Kartu Utama Hero Match */}

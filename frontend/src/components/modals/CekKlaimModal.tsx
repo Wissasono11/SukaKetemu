@@ -5,6 +5,7 @@ import { INITIAL_CLAIM_TICKETS } from '../../data/mockItems'
 import { ClaimTicketCard } from './claim/ClaimTicketCard'
 import { ClaimHistoryCard } from './claim/ClaimHistoryCard'
 import { ClaimTicketSkeleton } from './claim/ClaimTicketSkeleton'
+import { ClaimHistorySkeleton } from './claim/ClaimHistorySkeleton'
 
 interface CekKlaimModalProps {
   isOpen: boolean
@@ -117,7 +118,11 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
 
         {/* Konten Tab Aktif / Riwayat */}
         {isLoading ? (
-          <ClaimTicketSkeleton />
+          activeTab === 'aktif' ? (
+            <ClaimTicketSkeleton />
+          ) : (
+            <ClaimHistorySkeleton count={2} />
+          )
         ) : activeTab === 'aktif' ? (
           activeTickets.length === 0 ? (
             renderEmptyState(
