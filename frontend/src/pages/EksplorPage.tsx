@@ -50,7 +50,7 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
           </a>
         </div>
         <p className="text-xs text-[#44574B]">
-          Titik penitipan resmi dan serah terima barang temuan di lingkungan FST UIN Sunan Kalijaga
+          Titik penitipan resmi dan serah terima barang temuan di lingkungan kampus UIN Sunan Kalijaga
         </p>
       </header>
 
@@ -99,7 +99,7 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
       >
         <Info className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
         <p className="text-[11px] leading-relaxed">
-          <strong>Ketentuan Pengamanan FST:</strong> Barang temuan tanpa konfirmasi pemilik disimpan maksimal 30 hari kalender di Pos Satpam sebelum diserahkan ke Subbagian Layanan Akademik &amp; Kemahasiswaan FST UIN Sunan Kalijaga.
+          <strong>Ketentuan Pengamanan:</strong> Barang temuan tanpa konfirmasi pemilik disimpan maksimal 30 hari kalender di Pos Satpam sebelum diserahkan ke Subbagian Layanan Akademik &amp; Kemahasiswaan UIN Sunan Kalijaga.
         </p>
       </aside>
     </div>

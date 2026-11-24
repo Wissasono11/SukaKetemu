@@ -35,7 +35,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onLogout }) => {
                 NIM 23106050012
               </span>
               <span className="text-[11px] text-[#44574B] truncate mt-0.5">
-                Teknik Informatika &bull; FST UIN Sunan Kalijaga
+                Teknik Informatika &bull; UIN Sunan Kalijaga
               </span>
             </div>
           </div>

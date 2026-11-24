@@ -150,19 +150,19 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
         {isScanning ? (
           <div className="flex flex-col gap-4">
             {/* Viewfinder Box */}
-            <div className="relative w-full aspect-square max-h-64 rounded-2xl bg-slate-900 overflow-hidden flex flex-col items-center justify-center border border-slate-800 shadow-inner">
+            <div className="relative w-full aspect-square max-h-64 rounded-2xl bg-black overflow-hidden flex flex-col items-center justify-center border border-black shadow-inner">
               <div
                 id="pos-qr-reader"
                 className="w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover [&_#qr-shaded-region]:!hidden"
               />
 
               {!isCameraReady && (
-                <div className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center gap-2 text-center p-4">
+                <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center gap-2 text-center p-4">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white/70">
                     <Camera className="w-6 h-6 animate-pulse" />
                   </div>
-                  <span className="text-[11px] font-medium text-slate-300">Menghubungkan Sensor Kamera PWA...</span>
-                  <span className="text-[10px] text-slate-400">(Arahkan kamera ke stiker QR pos)</span>
+                  <span className="text-[11px] font-medium text-neutral-300">Menghubungkan Sensor Kamera PWA...</span>
+                  <span className="text-[10px] text-neutral-400">(Arahkan kamera ke stiker QR pos)</span>
                 </div>
               )}
 

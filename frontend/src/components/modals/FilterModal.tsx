@@ -165,7 +165,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-[#14261B]">Pos Satpam &amp; Penyimpanan</label>
-              <span className="text-[10px] text-[#44574B]">Kampus FST UIN</span>
+              <span className="text-[10px] text-[#44574B]">Kampus UIN</span>
             </div>
 
             <div className="flex flex-col gap-2">

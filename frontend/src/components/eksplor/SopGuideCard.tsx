@@ -31,7 +31,7 @@ export const SopGuideCard: React.FC = () => {
             Tata Cara Pengambilan Barang di Pos Satpam
           </h3>
           <p className="text-[11px] text-[#44574B] mt-0.5">
-            Prosedur serah terima fisik Fakultas Sains &amp; Teknologi UIN Sunan Kalijaga
+            Prosedur serah terima fisik kampus UIN Sunan Kalijaga
           </p>
         </div>
       </div>
