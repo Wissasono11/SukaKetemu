@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { ProfileHeader } from '../components/profile/ProfileHeader'
 import { ProfileStats } from '../components/profile/ProfileStats'
 import { MyReportCard } from '../components/profile/MyReportCard'
+import { MyReportCardSkeleton } from '../components/profile/MyReportCardSkeleton'
 import { ProfileHelpCard } from '../components/profile/ProfileHelpCard'
 import { ClaimTicketCard } from '../components/modals/claim/ClaimTicketCard'
+import { ClaimTicketSkeleton } from '../components/modals/claim/ClaimTicketSkeleton'
 import { MY_USER_REPORTS, INITIAL_CLAIM_TICKETS } from '../data/mockItems'
 import type { ClaimTicket, UserReportItem } from '../types/lostFound'
 
@@ -20,8 +22,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigateToPos,
 }) => {
   const [activeTab, setActiveTab] = useState<'laporan' | 'klaim'>('laporan')
+  const [isLoading, setIsLoading] = useState(true)
   const [myReports] = useState<UserReportItem[]>(MY_USER_REPORTS)
   const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [activeTab])
 
   const activeReportsCount = myReports.filter((r) => r.status !== 'selesai').length
   const activeTicketsCount = claimTickets.filter(
@@ -120,7 +129,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </button>
           </div>
 
-          {myReports.length === 0 ? (
+          {isLoading ? (
+            <MyReportCardSkeleton count={3} />
+          ) : myReports.length === 0 ? (
             <div className="p-6 rounded-2xl bg-white border border-dashed border-slate-200 text-center text-xs text-slate-500">
               Belum ada laporan aktif. Buat laporan barang temuan atau hilang.
             </div>
@@ -146,7 +157,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <span>Tunjukkan QR &amp; OTP saat mengambil barang di pos</span>
           </div>
 
-          {claimTickets.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col gap-3">
+              <ClaimTicketSkeleton />
+              <ClaimTicketSkeleton />
+            </div>
+          ) : claimTickets.length === 0 ? (
             <div className="p-6 rounded-2xl bg-white border border-dashed border-slate-200 text-center text-xs text-slate-500">
               Tidak ada tiket klaim aktif saat ini.
             </div>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Phone, Building2, Shield, Info } from 'lucide-react'
 import { POS_SATPAM_LIST, INITIAL_ITEMS } from '../data/mockItems'
 import { CampusMapTeaser } from '../components/eksplor/CampusMapTeaser'
 import { PosSatpamCard } from '../components/eksplor/PosSatpamCard'
+import { PosSatpamCardSkeleton } from '../components/eksplor/PosSatpamCardSkeleton'
 import { SopGuideCard } from '../components/eksplor/SopGuideCard'
 
 interface EksplorPageProps {
@@ -15,6 +16,12 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
   onScanQr,
 }) => {
   const [selectedPosId, setSelectedPosId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleSelectPosFromMap = (posId: string) => {
     setSelectedPosId(posId)
@@ -73,19 +80,23 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
         </div>
 
         <div className="flex flex-col gap-3.5">
-          {POS_SATPAM_LIST.map((pos) => {
-            const stored = getStoredItemsForPos(pos.id)
-            return (
-              <PosSatpamCard
-                key={pos.id}
-                pos={pos}
-                storedItems={stored}
-                isSelected={selectedPosId === pos.id}
-                onFilterByPos={() => onNavigateToPos(pos.name)}
-                onScanQr={onScanQr}
-              />
-            )
-          })}
+          {isLoading ? (
+            <PosSatpamCardSkeleton count={3} />
+          ) : (
+            POS_SATPAM_LIST.map((pos) => {
+              const stored = getStoredItemsForPos(pos.id)
+              return (
+                <PosSatpamCard
+                  key={pos.id}
+                  pos={pos}
+                  storedItems={stored}
+                  isSelected={selectedPosId === pos.id}
+                  onFilterByPos={() => onNavigateToPos(pos.name)}
+                  onScanQr={onScanQr}
+                />
+              )
+            })
+          )}
         </div>
       </section>
 
