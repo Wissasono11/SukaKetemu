@@ -5,6 +5,7 @@ import type {
   ClaimTicket,
   AiMatchItem,
   FilterCriteria,
+  UserReportItem,
 } from '../types/lostFound'
 
 export const INITIAL_ITEMS: LostFoundItem[] = [
@@ -360,3 +361,46 @@ export function filterLostFoundItems(
     return true
   })
 }
+
+export const MY_USER_REPORTS: UserReportItem[] = [
+  {
+    id: 'my-rep-1',
+    type: 'lost',
+    title: 'TWS Soundcore R50i Hitam',
+    category: 'elektronik',
+    categoryLabel: 'Elektronik',
+    imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+    locationDetail: 'Hilang di sekitar Musholla Lt. 2 FST',
+    reportedDate: 'Kemarin, 14:15 WIB',
+    status: 'cocok_ai',
+    statusLabel: '1 Kecocokan AI Ditemukan',
+    aiMatchCount: 1,
+  },
+  {
+    id: 'my-rep-2',
+    type: 'found',
+    title: 'Kalkulator Casio FX-991EX',
+    category: 'elektronik',
+    categoryLabel: 'Elektronik',
+    imageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?q=80&w=600&auto=format&fit=crop',
+    locationDetail: 'Ditemukan di Lab Fisika Dasar',
+    reportedDate: '19 Nov 2026, 11:00 WIB',
+    status: 'dititipkan',
+    statusLabel: 'Dititipkan di Pos Satpam',
+    custody: 'pos_satpam',
+    posName: 'Pos Satpam Utama Lobby FST',
+  },
+  {
+    id: 'my-rep-3',
+    type: 'lost',
+    title: 'Flashdisk Sandisk 32GB Merah',
+    category: 'elektronik',
+    categoryLabel: 'Elektronik',
+    imageUrl: 'https://images.unsplash.com/photo-1477949331575-2763034b5fb5?q=80&w=600&auto=format&fit=crop',
+    locationDetail: 'Tertinggal di Lab Komputer 2',
+    reportedDate: '12 Nov 2026, 09:30 WIB',
+    status: 'selesai',
+    statusLabel: 'Selesai / Sudah Diambil',
+  },
+]
+

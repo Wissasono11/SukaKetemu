@@ -23,7 +23,7 @@ import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
 import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
 import { EksplorPage } from './EksplorPage'
-import { ShieldCheck, Ticket } from 'lucide-react'
+import { ProfilePage } from './ProfilePage'
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -200,57 +200,14 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         )}
 
         {activeTab === 'profil' && (
-          <main className="flex-1 px-4 pt-4 pb-28 flex flex-col gap-4 text-left">
-            <section className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-[#E4F1E8] text-[#155E38] flex items-center justify-center font-bold text-lg border border-[#155E38]/20 shadow-2xs">
-                  BW
-                </div>
-                <div className="flex flex-col">
-                  <h3 className="text-sm font-extrabold text-[#14261B]">Bayu Wicaksono</h3>
-                  <span className="text-xs text-slate-500 font-mono">NIM: 23106050012</span>
-                  <span className="text-[11px] text-[#155E38] font-semibold mt-0.5">
-                    Teknik Informatika &bull; FST UIN Sunan Kalijaga
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowCekKlaimModal(true)}
-                  className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1 hover:bg-slate-100 transition-colors text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <Ticket className="w-4 h-4 text-[#155E38]" />
-                    <span className="text-xs font-bold text-[#155E38]">2 Tiket</span>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#14261B]">Status Klaim</span>
-                  <span className="text-[10px] text-slate-500">Tiket QR &amp; OTP</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowAiMatchModal(true)}
-                  className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1 hover:bg-slate-100 transition-colors text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <ShieldCheck className="w-4 h-4 text-[#C59B27]" />
-                    <span className="text-xs font-bold text-[#C59B27]">3 Cocok</span>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#14261B]">Radar AI</span>
-                  <span className="text-[10px] text-slate-500">Pencocokan Cerdas</span>
-                </button>
-              </div>
-            </section>
-
-            <div className="p-3.5 rounded-2xl bg-white border border-slate-200 flex flex-col gap-2">
-              <span className="text-xs font-bold text-[#14261B]">Akun Terverifikasi SSO UIN</span>
-              <p className="text-[11px] text-[#44574B] leading-relaxed">
-                Akun terhubung dengan Sistem Informasi Akademik (SIA) UIN Sunan Kalijaga Yogyakarta. Data kepemilikan barang dilindungi UU Perlindungan Data Pribadi (UU PDP).
-              </p>
-            </div>
-          </main>
+          <ProfilePage
+            onNavigateToLapor={onNavigateToLapor}
+            onOpenAiMatch={() => setShowAiMatchModal(true)}
+            onNavigateToPos={(posName) => {
+              handleFilterByPosName(posName)
+              setActiveTab('beranda')
+            }}
+          />
         )}
 
         <BottomNav

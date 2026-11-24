@@ -66,8 +66,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
           onClick={() => onActionClick('Pencocokan AI Multimodal')}
           className="flex flex-col items-center gap-1.5 group focus:outline-none"
         >
-          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#C59B27] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <ScanSearch className="w-5 h-5 text-[#C59B27]" />
+          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
+            <ScanSearch className="w-5 h-5 text-[#155E38]" />
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
             AI Match

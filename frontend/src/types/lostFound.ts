@@ -123,3 +123,22 @@ export interface ReportFormData {
   secretFeature?: string
   contactPhone: string
 }
+
+export type UserReportStatus = 'mencari' | 'cocok_ai' | 'dititipkan' | 'selesai'
+
+export interface UserReportItem {
+  id: string
+  type: ReportType
+  title: string
+  category: ItemCategory
+  categoryLabel: string
+  imageUrl: string
+  locationDetail: string
+  reportedDate: string
+  status: UserReportStatus
+  statusLabel: string
+  aiMatchCount?: number
+  custody?: CustodyStatus
+  posName?: string
+}
+
