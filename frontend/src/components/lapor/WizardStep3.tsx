@@ -21,6 +21,7 @@ interface WizardStep3Props {
   onContactPhoneChange: (val: string) => void
   isSubmitting: boolean
   isSuccess: boolean
+  isOfflineSaved?: boolean
   onPrev: () => void
 }
 
@@ -56,6 +57,7 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
   onContactPhoneChange,
   isSubmitting,
   isSuccess,
+  isOfflineSaved = false,
   onPrev,
 }) => {
   return (
@@ -181,7 +183,13 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
           ) : isSuccess ? (
             <>
               <CheckCircle className="w-4 h-4 text-white" />
-              <span>{isFound ? 'Berhasil! Laporan Terpasang di Sistem' : 'Berhasil! Laporan Telah Terbit'}</span>
+              <span>
+                {isOfflineSaved
+                  ? 'Tersimpan di HP (Antrean Offline)'
+                  : isFound
+                  ? 'Berhasil! Laporan Terpasang di Sistem'
+                  : 'Berhasil! Laporan Telah Terbit'}
+              </span>
             </>
           ) : (
             <>

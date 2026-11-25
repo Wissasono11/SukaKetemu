@@ -6,6 +6,7 @@ import { INITIAL_ITEMS, POS_SATPAM_LIST } from '../data/mockItems'
 import { INITIAL_NOTIFICATIONS } from '../data/mockNotifications'
 import { useLostFoundFilter } from '../hooks/useLostFoundFilter'
 import { HomeHeader } from '../components/home/HomeHeader'
+import { OfflineStatusBanner } from '../components/common/OfflineStatusBanner'
 import { SearchBar } from '../components/home/SearchBar'
 import { QuickActions } from '../components/home/QuickActions'
 import { DiscoveryBanner } from '../components/home/DiscoveryBanner'
@@ -87,6 +88,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onNotificationClick={() => setShowNotificationDrawer(true)}
           hasUnread={hasUnreadNotifications}
         />
+        <OfflineStatusBanner />
 
         {activeTab === 'beranda' && (
           <main className="flex-1 px-4 pt-4 pb-28 flex flex-col gap-4">

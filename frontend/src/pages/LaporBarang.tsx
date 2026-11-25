@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import type { ReportType } from '../types/lostFound'
 import { LaporHeader } from '../components/lapor/LaporHeader'
+import { OfflineStatusBanner } from '../components/common/OfflineStatusBanner'
 import { LaporStepper } from '../components/lapor/LaporStepper'
 import { WizardStep1 } from '../components/lapor/WizardStep1'
 import { WizardStep2 } from '../components/lapor/WizardStep2'
 import { WizardStep3 } from '../components/lapor/WizardStep3'
 import { submitReport } from '../services/reportService'
+import { enqueueOfflineReport } from '../services/offlineSyncService'
 
 export interface InitialReportLocation {
   gedung?: string
@@ -74,33 +76,55 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isOfflineSaved, setIsOfflineSaved] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    const reportPayload = {
+      type: reportType,
+      title,
+      category,
+      description,
+      location: { gedung, lantai, ruangan },
+      custody: (custodyStatus === 'satpam' ? 'pos_satpam' : 'dibawa_penemu') as 'pos_satpam' | 'dibawa_penemu',
+      posId: posSatpam,
+      secretFeature,
+      contactPhone,
+      timeLost: isFound ? undefined : timeLost,
+      photoFile,
+      isPrivacyBlur,
+    }
+
     try {
-      await submitReport({
-        type: reportType,
-        title,
-        category,
-        description,
-        location: { gedung, lantai, ruangan },
-        custody: custodyStatus === 'satpam' ? 'pos_satpam' : 'dibawa_penemu',
-        posId: posSatpam,
-        secretFeature,
-        contactPhone,
-        timeLost: isFound ? undefined : timeLost,
-        photoFile,
-        isPrivacyBlur,
-      })
-      setIsSuccess(true)
+      if (!navigator.onLine) {
+        // Safe offline queue via Dexie.js (IndexedDB)
+        await enqueueOfflineReport(reportPayload)
+        setIsOfflineSaved(true)
+        setIsSuccess(true)
+      } else {
+        await submitReport(reportPayload)
+        setIsOfflineSaved(false)
+        setIsSuccess(true)
+      }
       setTimeout(() => {
         if (onSuccess) onSuccess()
         else onBack()
-      }, 1200)
+      }, 1500)
     } catch (err) {
-      console.error(err)
-      alert('Gagal mengirim laporan. Silakan coba lagi.')
+      console.warn('Network submit failed, enqueueing to IndexedDB offline storage:', err)
+      try {
+        await enqueueOfflineReport(reportPayload)
+        setIsOfflineSaved(true)
+        setIsSuccess(true)
+        setTimeout(() => {
+          if (onSuccess) onSuccess()
+          else onBack()
+        }, 1500)
+      } catch (dbErr) {
+        console.error('Fatal Dexie error:', dbErr)
+        alert('Gagal menyimpan laporan. Silakan coba lagi.')
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -126,6 +150,7 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
           onBack={currentStep > 1 ? () => setCurrentStep((prev) => prev - 1) : onBack}
           onClose={onBack}
         />
+        <OfflineStatusBanner />
 
         <LaporStepper steps={steps} currentStep={currentStep} />
 
@@ -180,6 +205,7 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
               onContactPhoneChange={setContactPhone}
               isSubmitting={isSubmitting}
               isSuccess={isSuccess}
+              isOfflineSaved={isOfflineSaved}
               onPrev={() => setCurrentStep(2)}
             />
           )}
