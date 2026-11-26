@@ -9,21 +9,29 @@ import { MapSkeleton } from '../components/eksplor/MapSkeleton'
 const CampusMapTeaser = lazy(() => import('../components/eksplor/CampusMapTeaser'))
 
 interface EksplorPageProps {
+  initialSelectedPosId?: string | null
   onNavigateToPos: (posName: string) => void
   onScanQr: () => void
 }
 
 export const EksplorPage: React.FC<EksplorPageProps> = ({
+  initialSelectedPosId,
   onNavigateToPos,
   onScanQr,
 }) => {
-  const [selectedPosId, setSelectedPosId] = useState<string | null>(null)
+  const [selectedPosId, setSelectedPosId] = useState<string | null>(initialSelectedPosId || null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300)
+    const timer = setTimeout(() => setIsLoading(false), 200)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (initialSelectedPosId) {
+      setSelectedPosId(initialSelectedPosId)
+    }
+  }, [initialSelectedPosId])
 
   const handleSelectPosFromMap = (posId: string) => {
     setSelectedPosId(posId)

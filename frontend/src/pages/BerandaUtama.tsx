@@ -56,6 +56,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
   const [activeTab, setActiveTab] = useState<TabId>('beranda')
   const [modal, setModal] = useState<ActiveModal>(null)
+  const [selectedPosForMap, setSelectedPosForMap] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
   const [challengeItem, setChallengeItem] = useState<LostFoundItem | null>(null)
   const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
@@ -194,6 +195,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
         {activeTab === 'eksplor' && (
           <EksplorPage
+            initialSelectedPosId={selectedPosForMap}
             onNavigateToPos={(posName) => {
               handleFilterByPosName(posName)
               setActiveTab('beranda')
@@ -207,8 +209,9 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
             onNavigateToLapor={onNavigateToLapor}
             onOpenAiMatch={() => setModal('aiMatch')}
             onNavigateToPos={(posName) => {
-              handleFilterByPosName(posName)
-              setActiveTab('beranda')
+              const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
+              setSelectedPosForMap(matched ? matched.id : null)
+              setActiveTab('eksplor')
             }}
           />
         )}
@@ -279,7 +282,13 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         <CekKlaimModal
           isOpen={modal === 'cekKlaim'}
           onClose={() => setModal(null)}
-          onNavigateToPos={handleFilterByPosName}
+          onNavigateToPos={(posName) => {
+            // Find pos ID and navigate straight to Eksplor campus map
+            const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
+            setSelectedPosForMap(matched ? matched.id : null)
+            setActiveTab('eksplor')
+            setModal(null)
+          }}
           tickets={claimTickets}
           onTicketsChange={handleTicketsChange}
         />

@@ -2,12 +2,12 @@ import path from 'path'
 import fs from 'fs'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
 
 // HTTPS lokal dibutuhkan agar kamera (scan QR) bisa dipakai dari HP lewat IP jaringan.
-// Sertifikat dibuat sendiri per laptop (mis. dengan mkcert) dan TIDAK di-commit (*.pem di .gitignore).
-// Jika file sertifikat tidak ada (mis. di CI), server dev berjalan tanpa HTTPS dan build tetap aman.
+// Menggunakan @vitejs/plugin-basic-ssl otomatis menghasilkan sertifikat aman.
 const keyPath = './192.168.0.107+1-key.pem'
 const certPath = './192.168.0.107+1.pem'
 const hasLocalCert = fs.existsSync(keyPath) && fs.existsSync(certPath)
@@ -17,6 +17,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
