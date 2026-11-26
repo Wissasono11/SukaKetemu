@@ -9,6 +9,7 @@ import { ClaimTicketCard } from '../components/modals/claim/ClaimTicketCard'
 import { ClaimTicketSkeleton } from '../components/modals/claim/ClaimTicketSkeleton'
 import { MY_USER_REPORTS, INITIAL_CLAIM_TICKETS } from '../data/mockItems'
 import type { ClaimTicket, UserReportItem } from '../types/lostFound'
+import { getClaimTickets, getMyReports, updateClaimTicketStatus } from '../services/userDataService'
 
 interface ProfilePageProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -23,13 +24,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'laporan' | 'klaim'>('laporan')
   const [isLoading, setIsLoading] = useState(true)
-  const [myReports] = useState<UserReportItem[]>(MY_USER_REPORTS)
+  const [myReports, setMyReports] = useState<UserReportItem[]>(MY_USER_REPORTS)
   const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
 
   useEffect(() => {
     setIsLoading(true)
-    const timer = setTimeout(() => setIsLoading(false), 300)
-    return () => clearTimeout(timer)
+    Promise.all([getMyReports(), getClaimTickets()])
+      .then(([loadedReports, loadedTickets]) => {
+        setMyReports(loadedReports)
+        setClaimTickets(loadedTickets)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }, [activeTab])
 
   const activeReportsCount = myReports.filter((r) => r.status !== 'selesai').length
@@ -46,6 +53,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           : t
       )
     )
+    updateClaimTicketStatus(ticketId, 'cancelled', 'Dibatalkan Pengguna')
   }
 
   return (

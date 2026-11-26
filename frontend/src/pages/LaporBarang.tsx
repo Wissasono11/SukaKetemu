@@ -8,6 +8,7 @@ import { WizardStep2 } from '../components/lapor/WizardStep2'
 import { WizardStep3 } from '../components/lapor/WizardStep3'
 import { submitReport } from '../services/reportService'
 import { enqueueOfflineReport } from '../services/offlineSyncService'
+import { addMyReportFromSubmission } from '../services/userDataService'
 
 export interface InitialReportLocation {
   gedung?: string
@@ -99,11 +100,13 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
     try {
       if (!navigator.onLine) {
         // Safe offline queue via Dexie.js (IndexedDB)
-        await enqueueOfflineReport(reportPayload)
+        const offlineId = await enqueueOfflineReport(reportPayload)
+        await addMyReportFromSubmission(reportPayload, `OFFLINE-${offlineId}`)
         setIsOfflineSaved(true)
         setIsSuccess(true)
       } else {
-        await submitReport(reportPayload)
+        const res = await submitReport(reportPayload)
+        await addMyReportFromSubmission(reportPayload, res.id)
         setIsOfflineSaved(false)
         setIsSuccess(true)
       }
@@ -114,7 +117,8 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
     } catch (err) {
       console.warn('Network submit failed, enqueueing to IndexedDB offline storage:', err)
       try {
-        await enqueueOfflineReport(reportPayload)
+        const offlineId = await enqueueOfflineReport(reportPayload)
+        await addMyReportFromSubmission(reportPayload, `OFFLINE-${offlineId}`)
         setIsOfflineSaved(true)
         setIsSuccess(true)
         setTimeout(() => {

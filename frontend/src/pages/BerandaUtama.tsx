@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
 import type { LostFoundItem } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
@@ -22,6 +22,7 @@ import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { ChallengeResponseModal } from '../components/modals/claim/ChallengeResponseModal'
 import type { ClaimTicket } from '../types/lostFound'
 import { INITIAL_CLAIM_TICKETS } from '../data/mockItems'
+import { getClaimTickets, saveClaimTicket, updateClaimTicketStatus } from '../services/userDataService'
 import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
@@ -60,6 +61,12 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
   const [challengeItem, setChallengeItem] = useState<LostFoundItem | null>(null)
   const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
+
+  useEffect(() => {
+    getClaimTickets().then((loaded) => {
+      if (loaded.length > 0) setClaimTickets(loaded)
+    })
+  }, [])
 
   const hasUnreadNotifications = notifications.some((n) => !n.isRead)
 
@@ -266,7 +273,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           isOpen={!!challengeItem}
           item={challengeItem}
           onClose={() => setChallengeItem(null)}
-          onSuccess={(newTicket) => {
+          onSuccess={async (newTicket) => {
+            await saveClaimTicket(newTicket)
             setClaimTickets((prev) => [newTicket, ...prev])
             setShowCekKlaimModal(true)
           }}
@@ -286,7 +294,13 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onClose={() => setShowCekKlaimModal(false)}
           onNavigateToPos={handleFilterByPosName}
           tickets={claimTickets}
-          onTicketsChange={setClaimTickets}
+          onTicketsChange={(updatedTickets) => {
+            setClaimTickets(updatedTickets)
+            // Sync status to Dexie
+            updatedTickets.forEach((t) => {
+              updateClaimTicketStatus(t.id, t.status, t.statusLabel)
+            })
+          }}
         />
 
         {/* Modal Radar AI Match */}
