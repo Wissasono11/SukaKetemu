@@ -18,12 +18,16 @@ export const MyReportCard: React.FC<MyReportCardProps> = ({
   return (
     <article className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col gap-2.5 text-left">
       <div className="flex items-start gap-3">
-        <div className="relative w-14 h-14 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0">
-          <img
-            src={item.imageUrl}
-            alt={item.title}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative w-14 h-14 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 flex-shrink-0 flex items-center justify-center">
+          {item.imageUrl ? (
+            <img
+              src={item.imageUrl}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-[10px] font-bold text-slate-400">TEKS</span>
+          )}
         </div>
 
         <div className="flex flex-col flex-1 min-w-0">

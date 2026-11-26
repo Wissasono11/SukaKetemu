@@ -57,16 +57,19 @@ export async function addMyReportFromSubmission(
     id,
     type: payload.type,
     title: payload.title,
+    description: payload.description,
     category: (payload.category as ItemCategory) || 'lainnya',
     categoryLabel: categoryLabels[payload.category] || 'Lainnya',
     imageUrl:
       payload.photoFile && URL.createObjectURL
         ? URL.createObjectURL(payload.photoFile)
-        : 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop',
+        : undefined,
+    hasReferencePhoto: Boolean(payload.photoFile),
     locationDetail: `${payload.location.gedung} - ${payload.location.ruangan}`,
     reportedDate: new Date().toISOString(),
     status: isPos ? 'dititipkan' : 'mencari',
     statusLabel: isPos ? 'Dititipkan di Pos' : payload.type === 'found' ? 'Dipegang Penemu' : 'Sedang Dicari',
+    aiStatus: payload.type === 'lost' ? 'PENDING_VECTOR' : undefined,
     custody: payload.custody,
     posName: payload.posId,
   }

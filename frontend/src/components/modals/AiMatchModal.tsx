@@ -29,16 +29,14 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
     INITIAL_AI_MATCHES[0]?.id || ''
   )
   const [claimedItem, setClaimedItem] = useState<AiMatchItem | null>(null)
-  const [isScanning, setIsScanning] = useState(true)
+  const [isScanning, setIsScanning] = useState(false)
 
   useEffect(() => {
-    if (isOpen) {
-      setIsScanning(true)
-      const timer = setTimeout(() => {
-        setIsScanning(false)
-      }, 750)
-      return () => clearTimeout(timer)
-    }
+    if (!isOpen) return
+    const timer = setTimeout(() => {
+      setIsScanning(false)
+    }, 750)
+    return () => clearTimeout(timer)
   }, [isOpen])
 
   if (!isOpen) return null
@@ -62,6 +60,8 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
     setMatches((prev) =>
       prev.map((m) => (m.id === item.id ? { ...m, status: 'claimed' as const } : m))
     )
+    onClose()
+    if (onClaimSuccess) onClaimSuccess(item.custodyPos || item.foundLocation)
   }
 
   const handleReject = (id: string) => {
@@ -125,7 +125,7 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
                 Klaim AI Berhasil Diterbitkan!
               </span>
               <p className="text-xs text-[#44574B] mt-1 leading-relaxed">
-                Kecocokan 94% telah dikonfirmasi. Tiket pengambilan telah dibuat untuk <strong>{claimedItem.custodyPos}</strong>.
+                Kecocokan {claimedItem.matchScore}% telah dikonfirmasi. Lanjutkan verifikasi ciri rahasia untuk <strong>{claimedItem.custodyPos || claimedItem.foundLocation}</strong>.
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export const AiMatchModal: React.FC<AiMatchModalProps> = ({
               type="button"
               onClick={() => {
                 onClose()
-                if (onClaimSuccess) onClaimSuccess(claimedItem.custodyPos)
+                if (onClaimSuccess) onClaimSuccess(claimedItem.custodyPos || claimedItem.foundLocation)
               }}
               className="w-full py-3 rounded-xl bg-[#155E38] text-white text-xs font-bold hover:bg-[#0F4A2C] transition-all mt-1"
             >

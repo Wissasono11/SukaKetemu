@@ -81,20 +81,33 @@ export interface ClaimTicket {
   timeline: ClaimTimelineStep[]
 }
 
+export type AiSignalType = 'visual' | 'text' | 'location' | 'time'
+
 export interface AiMatchEvidence {
+  signal: AiSignalType
   factor: string
   description: string
+  weightPercent: number
   scorePercent: number
 }
 
 export interface AiMatchItem {
   id: string
+  lostReportId: string
+  rank: number
   lostItemTitle: string
-  lostItemImageUrl: string
+  lostItemDescription?: string
+  lostItemImageUrl?: string
+  hasReferencePhoto: boolean
+  foundItemId: string
   foundItemTitle: string
+  foundItemCategory: ItemCategory
+  foundItemCategoryLabel: string
   foundItemImageUrl: string
+  isPrivacySensitive?: boolean
   foundLocation: string
-  custodyPos: string
+  custody: CustodyStatus
+  custodyPos?: string
   matchScore: number
   timeAgo: string
   evidenceList: AiMatchEvidence[]
@@ -126,17 +139,22 @@ export interface ReportFormData {
 
 export type UserReportStatus = 'mencari' | 'cocok_ai' | 'dititipkan' | 'selesai'
 
+export type AiProcessingStatus = 'READY' | 'PENDING_VECTOR'
+
 export interface UserReportItem {
   id: string
   type: ReportType
   title: string
+  description?: string
   category: ItemCategory
   categoryLabel: string
-  imageUrl: string
+  imageUrl?: string
+  hasReferencePhoto?: boolean
   locationDetail: string
   reportedDate: string
   status: UserReportStatus
   statusLabel: string
+  aiStatus?: AiProcessingStatus
   aiMatchCount?: number
   custody?: CustodyStatus
   posName?: string

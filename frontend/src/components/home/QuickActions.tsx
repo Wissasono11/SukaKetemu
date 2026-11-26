@@ -1,9 +1,12 @@
 import React from 'react'
-import { FileSearch, Camera, QrCode, ShieldCheck, ScanSearch } from 'lucide-react'
+import { FileSearch, Camera, QrCode, ShieldCheck, Radar } from 'lucide-react'
 
 interface QuickActionsProps {
   onActionClick: (title: string) => void
 }
+
+const QUICK_BTN_CLASS =
+  'flex flex-col items-center gap-1.5 group rounded-xl py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38] focus-visible:ring-offset-2'
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => {
   return (
@@ -12,10 +15,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
         <button
           type="button"
           onClick={() => onActionClick('Lapor Barang Hilang')}
-          className="flex flex-col items-center gap-1.5 group focus:outline-none"
+          className={QUICK_BTN_CLASS}
         >
           <div className="w-12 h-12 rounded-2xl bg-[#155E38] text-white flex items-center justify-center shadow-sm group-hover:bg-[#0F4A2C] group-active:scale-95 transition-all">
-            <FileSearch className="w-5 h-5 text-white" />
+            <FileSearch className="w-5 h-5 text-white" aria-hidden="true" />
           </div>
           <span className="text-[11px] font-bold text-[#155E38] text-center leading-tight">
             Lapor Hilang
@@ -25,10 +28,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
         <button
           type="button"
           onClick={() => onActionClick('Lapor Barang Temuan')}
-          className="flex flex-col items-center gap-1.5 group focus:outline-none"
+          className={QUICK_BTN_CLASS}
         >
           <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <Camera className="w-5 h-5 text-[#155E38]" />
+            <Camera className="w-5 h-5 text-[#155E38]" aria-hidden="true" />
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
             Temuan
@@ -38,10 +41,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
         <button
           type="button"
           onClick={() => onActionClick('Scan QR Pos Satpam')}
-          className="flex flex-col items-center gap-1.5 group focus:outline-none"
+          className={QUICK_BTN_CLASS}
         >
           <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <QrCode className="w-5 h-5 text-[#155E38]" />
+            <QrCode className="w-5 h-5 text-[#155E38]" aria-hidden="true" />
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
             Scan QR
@@ -51,10 +54,10 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
         <button
           type="button"
           onClick={() => onActionClick('Cek Status Klaim')}
-          className="flex flex-col items-center gap-1.5 group focus:outline-none"
+          className={QUICK_BTN_CLASS}
         >
           <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <ShieldCheck className="w-5 h-5 text-[#155E38]" />
+            <ShieldCheck className="w-5 h-5 text-[#155E38]" aria-hidden="true" />
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
             Cek Klaim
@@ -64,13 +67,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
         <button
           type="button"
           onClick={() => onActionClick('Pencocokan AI Multimodal')}
-          className="flex flex-col items-center gap-1.5 group focus:outline-none"
+          className={QUICK_BTN_CLASS}
         >
           <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <ScanSearch className="w-5 h-5 text-[#155E38]" />
+            <Radar className="w-5 h-5 text-[#155E38]" aria-hidden="true" />
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
-            AI Match
+            Radar AI
           </span>
         </button>
       </div>

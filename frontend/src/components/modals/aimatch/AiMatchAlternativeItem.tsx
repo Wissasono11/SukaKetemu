@@ -1,5 +1,5 @@
 import React from 'react'
-import { ChevronRight, ScanSearch } from 'lucide-react'
+import { EyeOff } from 'lucide-react'
 import type { AiMatchItem } from '../../../types/lostFound'
 
 interface AiMatchAlternativeItemProps {
@@ -11,35 +11,55 @@ export const AiMatchAlternativeItem: React.FC<AiMatchAlternativeItemProps> = ({
   item,
   onSelect,
 }) => {
+  const custodyLabel =
+    item.custody === 'pos_satpam'
+      ? (item.custodyPos || 'Pos Satpam').split('(')[0].trim()
+      : 'Dibawa Penemu'
+
   return (
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-left flex items-center justify-between gap-3 group active:scale-[0.99]"
+      className="w-full min-h-[56px] px-3.5 py-3 bg-white hover:bg-slate-50 transition-colors text-left flex items-center justify-between gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#155E38]"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <img
-          src={item.foundItemImageUrl}
-          alt={item.foundItemTitle}
-          className="w-11 h-11 rounded-lg object-cover border border-slate-200 flex-shrink-0"
-        />
+        <span className="text-xs font-semibold text-[#44574B] tabular-nums w-6 flex-shrink-0">
+          #{item.rank}
+        </span>
+
+        <div className="relative w-11 h-11 rounded-md overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-100">
+          <img
+            src={item.foundItemImageUrl}
+            alt={item.foundItemTitle}
+            width={44}
+            height={44}
+            className={`w-full h-full object-cover ${
+              item.isPrivacySensitive ? 'blur-sm scale-110' : ''
+            }`}
+          />
+          {item.isPrivacySensitive && (
+            <span
+              className="absolute inset-0 bg-black/40 flex items-center justify-center"
+              aria-hidden="true"
+            >
+              <EyeOff className="w-3.5 h-3.5 text-white" />
+            </span>
+          )}
+        </div>
+
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-[#14261B] truncate group-hover:text-[#155E38] transition-colors">
             {item.foundItemTitle}
           </span>
-          <span className="text-[10px] text-[#44574B] truncate">
-            {item.foundLocation} • {item.custodyPos.split('(')[0]}
+          <span className="text-[11px] text-[#44574B] truncate">
+            {item.foundLocation}, {custodyLabel}
           </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 flex-shrink-0">
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-[#44574B] group-hover:bg-[#E4F1E8] group-hover:text-[#0F4A2C] transition-colors">
-          <ScanSearch className="w-3 h-3" />
-          {item.matchScore}%
-        </span>
-        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#155E38] transition-colors" />
-      </div>
+      <span className="text-xs font-bold text-[#155E38] tabular-nums flex-shrink-0">
+        {item.matchScore}%
+      </span>
     </button>
   )
 }

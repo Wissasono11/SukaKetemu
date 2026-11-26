@@ -1,8 +1,8 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
-import type { LostFoundItem } from '../types/lostFound'
+import type { AiMatchItem, ClaimTicket, LostFoundItem } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
-import { INITIAL_ITEMS, POS_SATPAM_LIST } from '../data/mockItems'
+import { INITIAL_ITEMS, INITIAL_AI_MATCHES, POS_SATPAM_LIST, INITIAL_CLAIM_TICKETS } from '../data/mockItems'
 import { INITIAL_NOTIFICATIONS } from '../data/mockNotifications'
 import { useLostFoundFilter } from '../hooks/useLostFoundFilter'
 import { HomeHeader } from '../components/home/HomeHeader'
@@ -19,21 +19,23 @@ import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { ChallengeResponseModal } from '../components/modals/claim/ChallengeResponseModal'
-import type { ClaimTicket } from '../types/lostFound'
-import { INITIAL_CLAIM_TICKETS } from '../data/mockItems'
 import { getClaimTickets, saveClaimTicket, updateClaimTicketStatus } from '../services/userDataService'
-import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
 import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
 import { EksplorPage } from './EksplorPage'
 import { ProfilePage } from './ProfilePage'
+import { AiMatchSkeleton } from '../components/modals/aimatch/AiMatchSkeleton'
+
+const CocokAiPage = lazy(() =>
+  import('./CocokAiPage').then((m) => ({ default: m.CocokAiPage }))
+)
 
 const ScanQrModal = lazy(() =>
   import('../components/modals/ScanQrModal').then((m) => ({ default: m.ScanQrModal }))
 )
 
-type ActiveModal = 'quickReport' | 'scanQr' | 'cekKlaim' | 'aiMatch' | 'filter' | 'notification' | null
+type ActiveModal = 'quickReport' | 'scanQr' | 'cekKlaim' | 'filter' | 'notification' | null
 
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
@@ -59,6 +61,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [selectedPosForMap, setSelectedPosForMap] = useState<string | null>(null)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
   const [challengeItem, setChallengeItem] = useState<LostFoundItem | null>(null)
+  const [pendingClaimMatchId, setPendingClaimMatchId] = useState<string | null>(null)
+  const [aiMatches, setAiMatches] = useState<AiMatchItem[]>(INITIAL_AI_MATCHES)
   const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
   const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
@@ -75,8 +79,30 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     'Lapor Barang Temuan': () => onNavigateToLapor?.('found'),
     'Scan QR Pos Satpam': () => setModal('scanQr'),
     'Cek Status Klaim': () => setModal('cekKlaim'),
-    'Pencocokan AI Multimodal': () => setModal('aiMatch'),
+    'Pencocokan AI Multimodal': () => setActiveTab('cocok-ai'),
   }
+
+  const handleRequestAiMatchClaim = (match: AiMatchItem) => {
+    const existingItem = INITIAL_ITEMS.find((it) => it.id === match.foundItemId)
+    const targetItem: LostFoundItem = existingItem ?? {
+      id: match.foundItemId,
+      title: match.foundItemTitle,
+      category: match.foundItemCategory,
+      categoryLabel: match.foundItemCategoryLabel,
+      imageUrl: match.foundItemImageUrl,
+      imageAlt: match.foundItemTitle,
+      custody: match.custody,
+      locationDetail:
+        match.custody === 'pos_satpam'
+          ? `${match.custodyPos || 'Pos Satpam FST'} • ${match.foundLocation}`
+          : `Dibawa Penemu • ${match.foundLocation}`,
+      isPrivacySensitive: match.isPrivacySensitive,
+    }
+    setPendingClaimMatchId(match.id)
+    setChallengeItem(targetItem)
+  }
+
+  const unresolvedAiMatchCount = aiMatches.filter((m) => m.status === 'unresolved').length
 
   const handleTicketsChange = (updated: ClaimTicket[]) => {
     setClaimTickets(updated)
@@ -204,10 +230,32 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           />
         )}
 
+        {activeTab === 'cocok-ai' && (
+          <Suspense
+            fallback={
+              <main className="flex-1 px-4 pt-4 pb-24">
+                <AiMatchSkeleton showHeader showTabs />
+              </main>
+            }
+          >
+            <CocokAiPage
+              matches={aiMatches}
+              onRejectMatch={(matchId) =>
+                setAiMatches((prev) =>
+                  prev.map((m) => (m.id === matchId ? { ...m, status: 'rejected' as const } : m))
+                )
+              }
+              onRequestClaim={handleRequestAiMatchClaim}
+              onNavigateToLapor={onNavigateToLapor}
+              onBrowseBeranda={() => setActiveTab('beranda')}
+            />
+          </Suspense>
+        )}
+
         {activeTab === 'profil' && (
           <ProfilePage
             onNavigateToLapor={onNavigateToLapor}
-            onOpenAiMatch={() => setModal('aiMatch')}
+            onOpenAiMatch={() => setActiveTab('cocok-ai')}
             onNavigateToPos={(posName) => {
               const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
               setSelectedPosForMap(matched ? matched.id : null)
@@ -218,11 +266,9 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
 
         <BottomNav
           activeTab={activeTab}
-          onTabChange={(tab) => {
-            setActiveTab(tab)
-            if (tab === 'cocok-ai') setModal('aiMatch')
-          }}
+          onTabChange={(tab) => setActiveTab(tab)}
           onPlusClick={() => setModal('quickReport')}
+          aiMatchCount={unresolvedAiMatchCount}
         />
 
         {/* Quick Report Bottom Sheet */}
@@ -240,7 +286,12 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onMarkAllAsRead={() => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })))}
           onSelectNotification={(item) => {
             setNotifications((p) => p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)))
-            setModal(item.actionTarget === 'aimatch' ? 'aiMatch' : item.actionTarget === 'claim' ? 'cekKlaim' : null)
+            if (item.actionTarget === 'aimatch') {
+              setModal(null)
+              setActiveTab('cocok-ai')
+            } else {
+              setModal(item.actionTarget === 'claim' ? 'cekKlaim' : null)
+            }
           }}
         />
 
@@ -250,6 +301,7 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onClose={() => setSelectedItem(null)}
           onRequestChallengeClaim={(item) => {
             setSelectedItem(null)
+            setPendingClaimMatchId(null)
             setChallengeItem(item)
           }}
         />
@@ -258,10 +310,21 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         <ChallengeResponseModal
           isOpen={!!challengeItem}
           item={challengeItem}
-          onClose={() => setChallengeItem(null)}
+          onClose={() => {
+            setChallengeItem(null)
+            setPendingClaimMatchId(null)
+          }}
           onSuccess={async (newTicket) => {
             await saveClaimTicket(newTicket)
             setClaimTickets((prev) => [newTicket, ...prev])
+            if (pendingClaimMatchId) {
+              setAiMatches((prev) =>
+                prev.map((m) =>
+                  m.id === pendingClaimMatchId ? { ...m, status: 'claimed' as const } : m
+                )
+              )
+              setPendingClaimMatchId(null)
+            }
             setModal('cekKlaim')
           }}
         />
@@ -291,13 +354,6 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           }}
           tickets={claimTickets}
           onTicketsChange={handleTicketsChange}
-        />
-
-        {/* Modal Radar AI Match */}
-        <AiMatchModal
-          isOpen={modal === 'aiMatch'}
-          onClose={() => setModal(null)}
-          onClaimSuccess={() => setModal('cekKlaim')}
         />
 
         {/* Modal Filter Lanjutan */}
