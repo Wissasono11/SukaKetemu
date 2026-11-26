@@ -19,12 +19,14 @@ import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 interface ItemDetailModalProps {
   item: LostFoundItem | null
   onClose: () => void
+  onRequestChallengeClaim?: (item: LostFoundItem) => void
   onClaimSuccess?: (item: LostFoundItem) => void
 }
 
 export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   item,
   onClose,
+  onRequestChallengeClaim,
   onClaimSuccess,
 }) => {
   const [isClaimed, setIsClaimed] = useState(false)
@@ -41,6 +43,10 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const isPosSatpam = item.custody === 'pos_satpam'
 
   const handleClaim = () => {
+    if (onRequestChallengeClaim) {
+      onRequestChallengeClaim(item)
+      return
+    }
     setIsSubmitting(true)
     setTimeout(() => {
       setIsSubmitting(false)

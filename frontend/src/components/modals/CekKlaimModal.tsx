@@ -11,15 +11,29 @@ interface CekKlaimModalProps {
   isOpen: boolean
   onClose: () => void
   onNavigateToPos?: (posName: string) => void
+  tickets?: ClaimTicket[]
+  onTicketsChange?: (tickets: ClaimTicket[]) => void
 }
 
 export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   isOpen,
   onClose,
   onNavigateToPos,
+  tickets: propTickets,
+  onTicketsChange,
 }) => {
   const [activeTab, setActiveTab] = useState<'aktif' | 'riwayat'>('aktif')
-  const [tickets, setTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
+  const [internalTickets, setInternalTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
+
+  const tickets = propTickets ?? internalTickets
+  const setTickets = (updater: React.SetStateAction<ClaimTicket[]>) => {
+    if (onTicketsChange) {
+      const nextTickets = typeof updater === 'function' ? updater(tickets) : updater
+      onTicketsChange(nextTickets)
+    } else {
+      setInternalTickets(updater)
+    }
+  }
   const [cancelModalTicketId, setCancelModalTicketId] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
   const [isLoading, setIsLoading] = useState(true)

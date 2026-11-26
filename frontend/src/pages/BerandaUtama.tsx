@@ -19,6 +19,9 @@ import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { ScanQrModal } from '../components/modals/ScanQrModal'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
+import { ChallengeResponseModal } from '../components/modals/claim/ChallengeResponseModal'
+import type { ClaimTicket } from '../types/lostFound'
+import { INITIAL_CLAIM_TICKETS } from '../data/mockItems'
 import { AiMatchModal } from '../components/modals/AiMatchModal'
 import { FilterModal } from '../components/modals/FilterModal'
 import { QuickReportSheet } from '../components/modals/QuickReportSheet'
@@ -55,6 +58,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   const [showAiMatchModal, setShowAiMatchModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
+  const [challengeItem, setChallengeItem] = useState<LostFoundItem | null>(null)
+  const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
 
   const hasUnreadNotifications = notifications.some((n) => !n.isRead)
 
@@ -250,6 +255,21 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         <ItemDetailModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+          onRequestChallengeClaim={(item) => {
+            setSelectedItem(null)
+            setChallengeItem(item)
+          }}
+        />
+
+        {/* Modal Interaktif Challenge-Response Verifikasi Klaim */}
+        <ChallengeResponseModal
+          isOpen={!!challengeItem}
+          item={challengeItem}
+          onClose={() => setChallengeItem(null)}
+          onSuccess={(newTicket) => {
+            setClaimTickets((prev) => [newTicket, ...prev])
+            setShowCekKlaimModal(true)
+          }}
         />
 
         {/* Modal Scanner QR Pos Satpam */}
@@ -265,6 +285,8 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           isOpen={showCekKlaimModal}
           onClose={() => setShowCekKlaimModal(false)}
           onNavigateToPos={handleFilterByPosName}
+          tickets={claimTickets}
+          onTicketsChange={setClaimTickets}
         />
 
         {/* Modal Radar AI Match */}
