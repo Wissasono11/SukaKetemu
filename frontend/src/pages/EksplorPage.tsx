@@ -30,6 +30,13 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
   useEffect(() => {
     if (initialSelectedPosId) {
       setSelectedPosId(initialSelectedPosId)
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`pos-card-${initialSelectedPosId}`)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 400)
+      return () => clearTimeout(timer)
     }
   }, [initialSelectedPosId])
 
