@@ -54,7 +54,20 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/api'),
+            urlPattern: ({ url, request }) => {
+              if (request.method !== 'GET') return false
+              if (request.headers.has('authorization')) return false
+              if (!url.pathname.startsWith('/api')) return false
+              const sensitivePrefixes = [
+                '/api/auth',
+                '/api/claims',
+                '/api/users',
+                '/api/my-reports',
+                '/api/otp',
+                '/api/admin',
+              ]
+              return !sensitivePrefixes.some((prefix) => url.pathname.startsWith(prefix))
+            },
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

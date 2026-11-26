@@ -11,6 +11,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react'
 import type { ClaimTicket } from '../../../types/lostFound'
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard'
+import { regenerateClaimOtp } from '../../../services/claimService'
 
 interface ClaimTicketCardProps {
   ticket: ClaimTicket
@@ -26,7 +27,8 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
   const { copied: copiedOtp, copy: copyOtp } = useCopyToClipboard()
   const [secondsLeft, setSecondsLeft] = useState(285) // TTL 5 Menit (default 4m 45s)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [currentOtp, setCurrentOtp] = useState(ticket.otpCode)
+  const [overrideOtp, setOverrideOtp] = useState<{ ticketId: string; otp: string } | null>(null)
+  const currentOtp = overrideOtp?.ticketId === ticket.id ? overrideOtp.otp : ticket.otpCode
 
   const isReady = ticket.status === 'ready_for_pickup'
 
@@ -42,14 +44,17 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
     copyOtp(otp)
   }
 
-  const handleRegenerateOtp = () => {
+  const handleRegenerateOtp = async () => {
     setIsRefreshing(true)
-    setTimeout(() => {
-      const randomOtp = Math.floor(100000 + Math.random() * 900000).toString()
-      setCurrentOtp(randomOtp)
-      setSecondsLeft(300) // Reset 5 menit TTL
+    try {
+      const { otpCode, ttlSeconds } = await regenerateClaimOtp(ticket.id)
+      setOverrideOtp({ ticketId: ticket.id, otp: otpCode })
+      setSecondsLeft(ttlSeconds)
+    } catch {
+      // Abaikan kegagalan jaringan agar OTP terakhir tetap tampil
+    } finally {
       setIsRefreshing(false)
-    }, 450)
+    }
   }
 
   const minutes = Math.floor(secondsLeft / 60)

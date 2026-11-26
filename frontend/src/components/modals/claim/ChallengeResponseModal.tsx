@@ -8,6 +8,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import type { LostFoundItem, ClaimTicket } from '../../../types/lostFound'
+import { submitClaimChallenge } from '../../../services/claimService'
 
 interface ChallengeResponseModalProps {
   isOpen: boolean
@@ -31,6 +32,7 @@ export const ChallengeResponseModal: React.FC<ChallengeResponseModalProps> = ({
   if (!isOpen || !item) return null
 
   const isPosSatpam = item.custody === 'pos_satpam'
+  void isPosSatpam
 
   const getChallengePrompt = () => {
     switch (item.category) {
@@ -49,7 +51,7 @@ export const ChallengeResponseModal: React.FC<ChallengeResponseModalProps> = ({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!answer.trim() || answer.trim().length < 5) {
       setErrorMsg('Tuliskan ciri khusus minimal 5 karakter untuk verifikasi.')
@@ -59,33 +61,15 @@ export const ChallengeResponseModal: React.FC<ChallengeResponseModalProps> = ({
     setErrorMsg(null)
     setIsSubmitting(true)
 
-    setTimeout(() => {
+    try {
+      const generatedTicket = await submitClaimChallenge({
+        item,
+        answer: answer.trim(),
+        proofNote: proofNote.trim() || undefined,
+      })
+
       setIsSubmitting(false)
       setIsSuccess(true)
-
-      const randomNum = Math.floor(1000 + Math.random() * 9000)
-      const generatedTicket: ClaimTicket = {
-        id: `TKT-${randomNum}`,
-        ticketNumber: `SK-2026-${randomNum}`,
-        itemTitle: item.title,
-        itemCategory: item.category,
-        categoryLabel: item.categoryLabel,
-        itemImageUrl: item.imageUrl,
-        posLocation: isPosSatpam
-          ? item.locationDetail.split('•')[0].trim() || 'Pos Satpam FST'
-          : 'Masih Dibawa Penemu (Area Kampus)',
-        status: 'ready_for_pickup',
-        statusLabel: isPosSatpam ? 'Siap Diambil di Pos' : 'Menunggu Handshake Penemu',
-        otpCode: String(Math.floor(100000 + Math.random() * 900000)),
-        createdAt: new Date().toISOString(),
-        pickupDeadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        matchedSecretFeature: answer.trim(),
-        timeline: [
-          { step: 1, title: 'Klaim Diajukan', desc: 'Verifikasi kepemilikan berhasil dicocokkan.', isDone: true, isCurrent: false },
-          { step: 2, title: 'Tiket Terbit', desc: 'Tunjukkan QR/OTP saat serah terima fisik.', isDone: true, isCurrent: true },
-          { step: 3, title: 'Selesai', desc: 'Pengecekan fisik oleh satpam/penemu.', isDone: false, isCurrent: false },
-        ],
-      }
 
       setTimeout(() => {
         onSuccess(generatedTicket)
@@ -94,7 +78,10 @@ export const ChallengeResponseModal: React.FC<ChallengeResponseModalProps> = ({
         setProofNote('')
         onClose()
       }, 900)
-    }, 600)
+    } catch (err: unknown) {
+      setIsSubmitting(false)
+      setErrorMsg(err instanceof Error ? err.message : 'Gagal mengirim verifikasi klaim.')
+    }
   }
 
   return (

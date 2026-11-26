@@ -44,6 +44,7 @@ export async function submitReport(payload: CreateReportPayload): Promise<Report
     if (payload.secretFeature) formData.append('secretFeature', payload.secretFeature)
     if (payload.contactPhone) formData.append('contactPhone', payload.contactPhone)
     if (payload.timeLost) formData.append('timeLost', payload.timeLost)
+    formData.append('isPrivacyBlur', String(Boolean(payload.isPrivacyBlur)))
     if (payload.photoFile) formData.append('photo', payload.photoFile)
 
     const res = await fetch(`${API_BASE_URL}/reports`, {

@@ -6,8 +6,37 @@ import {
   Loader2,
   CheckCircle2,
   Upload,
+  AlertTriangle,
 } from 'lucide-react'
 import { compressReportImage, formatBytes } from '../../utils/imageCompression'
+
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const MAX_RAW_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
+
+async function applyPixelBlurToImage(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file)
+  const canvas = document.createElement('canvas')
+  canvas.width = bitmap.width
+  canvas.height = bitmap.height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    bitmap.close()
+    throw new Error('Canvas context unavailable')
+  }
+  ctx.filter = 'blur(24px)'
+  ctx.drawImage(bitmap, 0, 0)
+  bitmap.close()
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('Blur export failed'))),
+      'image/jpeg',
+      0.85
+    )
+  })
+  const safeName = file.name.replace(/\.[^.]+$/, '') || 'photo'
+  return new File([blob], `${safeName}.jpg`, { type: 'image/jpeg' })
+}
 
 interface PhotoUploadBoxProps {
   isFound: boolean
@@ -38,6 +67,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
   onPrivacyBlurToggle,
 }) => {
   const [isCompressing, setIsCompressing] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [compressionInfo, setCompressionInfo] = useState<{
     original: string
     compressed: string
@@ -46,11 +76,14 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
 
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
+  const rawFileRef = useRef<File | null>(null)
 
-  const handleProcessFile = async (file: File) => {
+  const processFileWithPrivacy = async (file: File, shouldBlur: boolean) => {
+    setUploadError(null)
     try {
       setIsCompressing(true)
-      const result = await compressReportImage(file)
+      const prepared = isFound && shouldBlur ? await applyPixelBlurToImage(file) : file
+      const result = await compressReportImage(prepared)
       onPhotoChange(result.previewUrl)
       onPhotoFileChange?.(result.file)
       if (!isFound) onHasRefPhotoChange(true)
@@ -64,22 +97,41 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
         percent: Math.max(0, savedPercent),
       })
     } catch {
-      const fallbackUrl = URL.createObjectURL(file)
-      onPhotoChange(fallbackUrl)
-      onPhotoFileChange?.(file)
-      if (!isFound) onHasRefPhotoChange(true)
+      setUploadError('Gagal memproses foto. Pastikan file berupa gambar JPG, PNG, atau WebP yang valid.')
     } finally {
       setIsCompressing(false)
     }
   }
 
+  const handleProcessFile = async (file: File) => {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      setUploadError('Format file tidak didukung. Gunakan foto JPG, PNG, atau WebP.')
+      return
+    }
+    if (file.size > MAX_RAW_FILE_BYTES) {
+      setUploadError('Ukuran foto terlalu besar (maksimal 10 MB).')
+      return
+    }
+    rawFileRef.current = file
+    await processFileWithPrivacy(file, isPrivacyBlur)
+  }
+
+  const handlePrivacyToggle = (checked: boolean) => {
+    onPrivacyBlurToggle(checked)
+    if (rawFileRef.current) {
+      void processFileWithPrivacy(rawFileRef.current, checked)
+    }
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) handleProcessFile(file)
+    if (file) void handleProcessFile(file)
     e.target.value = ''
   }
 
   const handleSamplePhoto = () => {
+    rawFileRef.current = null
+    setUploadError(null)
     const nextIdx = (SAMPLE_PHOTOS.indexOf(photoUrl) + 1) % SAMPLE_PHOTOS.length
     onPhotoChange(SAMPLE_PHOTOS[nextIdx >= 0 ? nextIdx : 0])
     onPhotoFileChange?.(null)
@@ -88,6 +140,8 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
   }
 
   const handleRemovePhoto = () => {
+    rawFileRef.current = null
+    setUploadError(null)
     onHasRefPhotoChange(false)
     onPhotoFileChange?.(null)
     setCompressionInfo(null)
@@ -101,7 +155,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
       <input
         ref={cameraInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         capture="environment"
         className="hidden"
         onChange={handleFileChange}
@@ -109,7 +163,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
       <input
         ref={galleryInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         className="hidden"
         onChange={handleFileChange}
       />
@@ -210,7 +264,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
                 <input
                   type="checkbox"
                   checked={isPrivacyBlur}
-                  onChange={(e) => onPrivacyBlurToggle(e.target.checked)}
+                  onChange={(e) => handlePrivacyToggle(e.target.checked)}
                   className="w-3.5 h-3.5 rounded text-[#155E38] accent-[#155E38]"
                 />
                 <span className="text-xs font-semibold text-[#44574B] flex items-center gap-1.5">
@@ -260,6 +314,16 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
           >
             Atau gunakan foto sampel demo
           </button>
+        </div>
+      )}
+
+      {uploadError && (
+        <div
+          role="alert"
+          className="p-2.5 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs text-red-700"
+        >
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>{uploadError}</span>
         </div>
       )}
     </div>
