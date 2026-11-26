@@ -30,6 +30,8 @@ import { NotificationDrawer, type AppNotification } from '../components/modals/N
 import { EksplorPage } from './EksplorPage'
 import { ProfilePage } from './ProfilePage'
 
+type ActiveModal = 'quickReport' | 'scanQr' | 'cekKlaim' | 'aiMatch' | 'filter' | 'notification' | null
+
 interface BerandaUtamaProps {
   onNavigateToLapor?: (type: 'lost' | 'found') => void
 }
@@ -50,16 +52,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
   } = useLostFoundFilter(INITIAL_ITEMS, POS_SATPAM_LIST)
 
   const [activeTab, setActiveTab] = useState<TabId>('beranda')
-  const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
-  const [showNotificationDrawer, setShowNotificationDrawer] = useState(false)
-  const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
-  const [showQuickReportSheet, setShowQuickReportSheet] = useState(false)
-  const [showScanQrModal, setShowScanQrModal] = useState(false)
-  const [showCekKlaimModal, setShowCekKlaimModal] = useState(false)
-  const [showAiMatchModal, setShowAiMatchModal] = useState(false)
-  const [showFilterModal, setShowFilterModal] = useState(false)
+  const [modal, setModal] = useState<ActiveModal>(null)
   const [selectedItem, setSelectedItem] = useState<LostFoundItem | null>(null)
   const [challengeItem, setChallengeItem] = useState<LostFoundItem | null>(null)
+  const [showDiscoveryBanner, setShowDiscoveryBanner] = useState(true)
+  const [notifications, setNotifications] = useState<AppNotification[]>(INITIAL_NOTIFICATIONS)
   const [claimTickets, setClaimTickets] = useState<ClaimTicket[]>(INITIAL_CLAIM_TICKETS)
 
   useEffect(() => {
@@ -68,37 +65,26 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     })
   }, [])
 
-  const hasUnreadNotifications = notifications.some((n) => !n.isRead)
+  // Quick action dispatcher map
+  const actionHandlers: Record<string, () => void> = {
+    'Lapor Barang Hilang': () => onNavigateToLapor?.('lost'),
+    'Lapor Barang Temuan': () => onNavigateToLapor?.('found'),
+    'Scan QR Pos Satpam': () => setModal('scanQr'),
+    'Cek Status Klaim': () => setModal('cekKlaim'),
+    'Pencocokan AI Multimodal': () => setModal('aiMatch'),
+  }
 
-  const handleActionClick = (title: string) => {
-    switch (title) {
-      case 'Lapor Barang Hilang':
-        onNavigateToLapor?.('lost')
-        break
-      case 'Lapor Barang Temuan':
-        onNavigateToLapor?.('found')
-        break
-      case 'Scan QR Pos Satpam':
-        setShowScanQrModal(true)
-        break
-      case 'Cek Status Klaim':
-        setShowCekKlaimModal(true)
-        break
-      case 'Pencocokan AI Multimodal':
-        setShowAiMatchModal(true)
-        break
-      case 'Notifikasi':
-        setShowNotificationDrawer(true)
-        break
-    }
+  const handleTicketsChange = (updated: ClaimTicket[]) => {
+    setClaimTickets(updated)
+    updated.forEach((t) => updateClaimTicketStatus(t.id, t.status, t.statusLabel))
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#14261B] font-['Plus_Jakarta_Sans',sans-serif] flex flex-col items-center">
       <div className="w-full max-w-md bg-[#F8FAFC] min-h-screen flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.06)]">
         <HomeHeader
-          onNotificationClick={() => setShowNotificationDrawer(true)}
-          hasUnread={hasUnreadNotifications}
+          onNotificationClick={() => setModal('notification')}
+          hasUnread={notifications.some((n) => !n.isRead)}
         />
         <OfflineStatusBanner />
 
@@ -107,11 +93,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
-              onFilterClick={() => setShowFilterModal(true)}
+              onFilterClick={() => setModal('filter')}
               activeFilterCount={activeCount}
             />
 
-            <QuickActions onActionClick={handleActionClick} />
+            <QuickActions onActionClick={(title) => actionHandlers[title]?.()} />
 
             {showDiscoveryBanner && (
               <DiscoveryBanner onDismiss={() => setShowDiscoveryBanner(false)} />
@@ -209,14 +195,14 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               handleFilterByPosName(posName)
               setActiveTab('beranda')
             }}
-            onScanQr={() => setShowScanQrModal(true)}
+            onScanQr={() => setModal('scanQr')}
           />
         )}
 
         {activeTab === 'profil' && (
           <ProfilePage
             onNavigateToLapor={onNavigateToLapor}
-            onOpenAiMatch={() => setShowAiMatchModal(true)}
+            onOpenAiMatch={() => setModal('aiMatch')}
             onNavigateToPos={(posName) => {
               handleFilterByPosName(posName)
               setActiveTab('beranda')
@@ -228,33 +214,27 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           activeTab={activeTab}
           onTabChange={(tab) => {
             setActiveTab(tab)
-            if (tab === 'cocok-ai') {
-              setShowAiMatchModal(true)
-            }
+            if (tab === 'cocok-ai') setModal('aiMatch')
           }}
-          onPlusClick={() => setShowQuickReportSheet(true)}
+          onPlusClick={() => setModal('quickReport')}
         />
 
         {/* Quick Report Bottom Sheet */}
         <QuickReportSheet
-          isOpen={showQuickReportSheet}
-          onClose={() => setShowQuickReportSheet(false)}
+          isOpen={modal === 'quickReport'}
+          onClose={() => setModal(null)}
           onSelectType={(type) => onNavigateToLapor?.(type)}
         />
 
         {/* Drawer Notifikasi */}
         <NotificationDrawer
-          isOpen={showNotificationDrawer}
-          onClose={() => setShowNotificationDrawer(false)}
+          isOpen={modal === 'notification'}
+          onClose={() => setModal(null)}
           notifications={notifications}
           onMarkAllAsRead={() => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })))}
           onSelectNotification={(item) => {
-            setNotifications((p) =>
-              p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
-            )
-            setShowNotificationDrawer(false)
-            if (item.actionTarget === 'aimatch') setShowAiMatchModal(true)
-            if (item.actionTarget === 'claim') setShowCekKlaimModal(true)
+            setNotifications((p) => p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)))
+            setModal(item.actionTarget === 'aimatch' ? 'aiMatch' : item.actionTarget === 'claim' ? 'cekKlaim' : null)
           }}
         />
 
@@ -276,44 +256,38 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
           onSuccess={async (newTicket) => {
             await saveClaimTicket(newTicket)
             setClaimTickets((prev) => [newTicket, ...prev])
-            setShowCekKlaimModal(true)
+            setModal('cekKlaim')
           }}
         />
 
         {/* Modal Scanner QR Pos Satpam */}
         <ScanQrModal
-          isOpen={showScanQrModal}
-          onClose={() => setShowScanQrModal(false)}
+          isOpen={modal === 'scanQr'}
+          onClose={() => setModal(null)}
           onTitipBarang={() => onNavigateToLapor?.('found')}
           onFilterByPos={handleFilterByPosName}
         />
 
         {/* Modal Cek Tiket & Status Klaim */}
         <CekKlaimModal
-          isOpen={showCekKlaimModal}
-          onClose={() => setShowCekKlaimModal(false)}
+          isOpen={modal === 'cekKlaim'}
+          onClose={() => setModal(null)}
           onNavigateToPos={handleFilterByPosName}
           tickets={claimTickets}
-          onTicketsChange={(updatedTickets) => {
-            setClaimTickets(updatedTickets)
-            // Sync status to Dexie
-            updatedTickets.forEach((t) => {
-              updateClaimTicketStatus(t.id, t.status, t.statusLabel)
-            })
-          }}
+          onTicketsChange={handleTicketsChange}
         />
 
         {/* Modal Radar AI Match */}
         <AiMatchModal
-          isOpen={showAiMatchModal}
-          onClose={() => setShowAiMatchModal(false)}
-          onClaimSuccess={() => setShowCekKlaimModal(true)}
+          isOpen={modal === 'aiMatch'}
+          onClose={() => setModal(null)}
+          onClaimSuccess={() => setModal('cekKlaim')}
         />
 
         {/* Modal Filter Lanjutan */}
         <FilterModal
-          isOpen={showFilterModal}
-          onClose={() => setShowFilterModal(false)}
+          isOpen={modal === 'filter'}
+          onClose={() => setModal(null)}
           currentCriteria={filterCriteria}
           onApply={(newCriteria) => setFilterCriteria(newCriteria)}
           onReset={() => setFilterCriteria(DEFAULT_FILTER_CRITERIA)}
