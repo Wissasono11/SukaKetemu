@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { Phone, Building2, Shield, Info } from 'lucide-react'
 import { POS_SATPAM_LIST, INITIAL_ITEMS } from '../data/mockItems'
-import { CampusMapTeaser } from '../components/eksplor/CampusMapTeaser'
 import { PosSatpamCard } from '../components/eksplor/PosSatpamCard'
 import { PosSatpamCardSkeleton } from '../components/eksplor/PosSatpamCardSkeleton'
 import { SopGuideCard } from '../components/eksplor/SopGuideCard'
+import { MapSkeleton } from '../components/eksplor/MapSkeleton'
+
+const CampusMapTeaser = lazy(() => import('../components/eksplor/CampusMapTeaser'))
 
 interface EksplorPageProps {
   onNavigateToPos: (posName: string) => void
@@ -62,10 +64,18 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
       </header>
 
       {/* Campus Checkpoint Schematic */}
-      <CampusMapTeaser
-        selectedPosId={selectedPosId}
-        onSelectPos={handleSelectPosFromMap}
-      />
+      <Suspense
+        fallback={
+          <div className="w-full aspect-[16/11] sm:aspect-[16/9] rounded-2xl bg-white border border-slate-200 relative overflow-hidden">
+            <MapSkeleton />
+          </div>
+        }
+      >
+        <CampusMapTeaser
+          selectedPosId={selectedPosId}
+          onSelectPos={handleSelectPosFromMap}
+        />
+      </Suspense>
 
       {/* Checkpoint Cards List */}
       <section className="flex flex-col gap-3">

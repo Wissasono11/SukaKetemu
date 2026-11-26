@@ -90,5 +90,16 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/dexie')) return 'dexie'
+          if (id.includes('node_modules/qrcode.react')) return 'qr'
+          if (id.includes('node_modules/leaflet')) return 'leaflet'
+        },
+      },
+    },
+  },
 })
 

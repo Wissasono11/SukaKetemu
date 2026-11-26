@@ -1,7 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { MapPin, Scan, CheckCircle2 } from 'lucide-react'
-import { LocationQrScanner } from './LocationQrScanner'
+import React, { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
+import { MapPin, Scan, CheckCircle2, Loader2 } from 'lucide-react'
 import { getGedungList, getLantaiList, getRuanganList } from '../../data/locations'
+
+const LocationQrScanner = lazy(() =>
+  import('./LocationQrScanner').then((m) => ({ default: m.LocationQrScanner }))
+)
 
 interface LocationPickerBoxProps {
   isFound: boolean
@@ -139,10 +142,21 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
       )}
 
       {showQrScanner && (
-        <LocationQrScanner
-          onScanSuccess={handleLocationScan}
-          onClose={() => setShowQrScanner(false)}
-        />
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl p-6 flex flex-col items-center gap-2">
+                <Loader2 className="w-6 h-6 animate-spin text-[#155E38]" />
+                <span className="text-xs font-semibold text-slate-600">Menyiapkan Kamera...</span>
+              </div>
+            </div>
+          }
+        >
+          <LocationQrScanner
+            onScanSuccess={handleLocationScan}
+            onClose={() => setShowQrScanner(false)}
+          />
+        </Suspense>
       )}
     </div>
   )

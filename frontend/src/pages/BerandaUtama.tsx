@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
 import type { LostFoundItem } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
@@ -17,7 +17,6 @@ import { ItemCardSkeleton } from '../components/home/ItemCardSkeleton'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
-import { ScanQrModal } from '../components/modals/ScanQrModal'
 import { CekKlaimModal } from '../components/modals/CekKlaimModal'
 import { ChallengeResponseModal } from '../components/modals/claim/ChallengeResponseModal'
 import type { ClaimTicket } from '../types/lostFound'
@@ -29,6 +28,10 @@ import { QuickReportSheet } from '../components/modals/QuickReportSheet'
 import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
 import { EksplorPage } from './EksplorPage'
 import { ProfilePage } from './ProfilePage'
+
+const ScanQrModal = lazy(() =>
+  import('../components/modals/ScanQrModal').then((m) => ({ default: m.ScanQrModal }))
+)
 
 type ActiveModal = 'quickReport' | 'scanQr' | 'cekKlaim' | 'aiMatch' | 'filter' | 'notification' | null
 
@@ -261,12 +264,16 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         />
 
         {/* Modal Scanner QR Pos Satpam */}
-        <ScanQrModal
-          isOpen={modal === 'scanQr'}
-          onClose={() => setModal(null)}
-          onTitipBarang={() => onNavigateToLapor?.('found')}
-          onFilterByPos={handleFilterByPosName}
-        />
+        {modal === 'scanQr' && (
+          <Suspense fallback={null}>
+            <ScanQrModal
+              isOpen={true}
+              onClose={() => setModal(null)}
+              onTitipBarang={() => onNavigateToLapor?.('found')}
+              onFilterByPos={handleFilterByPosName}
+            />
+          </Suspense>
+        )}
 
         {/* Modal Cek Tiket & Status Klaim */}
         <CekKlaimModal
