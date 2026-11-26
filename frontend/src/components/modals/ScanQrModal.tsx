@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   X,
   Flashlight,
@@ -35,41 +35,47 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
   const [scannedPos, setScannedPos] = useState<PosSatpamInfo | null>(null)
   const [scanProgress, setScanProgress] = useState(false)
   const [isCameraReady, setIsCameraReady] = useState(false)
+  const [scanError, setScanError] = useState<string | null>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
 
-  const stopScanner = async () => {
+  const stopScanner = useCallback(async () => {
     if (scannerRef.current?.isScanning) {
-      await scannerRef.current.stop().catch(() => { })
+      await scannerRef.current.stop().catch(() => undefined)
       scannerRef.current.clear()
     }
     scannerRef.current = null
-  }
+  }, [])
 
-  const selectPos = async (pos: PosSatpamInfo) => {
+  const selectPos = useCallback(async (pos: PosSatpamInfo) => {
+    setScanError(null)
     await stopScanner()
+    setIsCameraReady(false)
     setScanProgress(true)
     setTimeout(() => {
       setScanProgress(false)
       setIsScanning(false)
       setScannedPos(pos)
     }, 400)
-  }
+  }, [stopScanner])
 
-  const parseQrText = (text: string) => {
-    const q = text.toLowerCase()
-    return POS_SATPAM_LIST.find(
-      (p) => q.includes(p.id.toLowerCase()) || q.includes(p.code.toLowerCase()) || q.includes(p.name.toLowerCase())
-    ) || POS_SATPAM_LIST[0]
+  const parseQrText = (text: string): PosSatpamInfo | null => {
+    const raw = text.trim()
+    const normalized = raw.startsWith('SUKAKETEMU:') ? raw.slice('SUKAKETEMU:'.length) : raw
+    const q = normalized.toLowerCase()
+    return (
+      POS_SATPAM_LIST.find(
+        (p) => p.id.toLowerCase() === q || p.code.toLowerCase() === q
+      ) ?? null
+    )
   }
 
   useEffect(() => {
     let mounted = true
     if (!isOpen || !isScanning) {
-      stopScanner()
+      void stopScanner()
       return
     }
 
-    setIsCameraReady(false)
     const timer = setTimeout(async () => {
       try {
         const scanner = new Html5Qrcode('pos-qr-reader')
@@ -77,8 +83,16 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 190, height: 190 } },
-          (text) => mounted && selectPos(parseQrText(text)),
-          () => { }
+          (text) => {
+            if (!mounted) return
+            const matched = parseQrText(text)
+            if (!matched) {
+              setScanError('QR tidak dikenali sebagai checkpoint Pos Satpam resmi SukaKetemu.')
+              return
+            }
+            void selectPos(matched)
+          },
+          () => undefined
         )
         if (mounted) setIsCameraReady(true)
       } catch (err) {
@@ -90,9 +104,9 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
     return () => {
       mounted = false
       clearTimeout(timer)
-      stopScanner()
+      void stopScanner()
     }
-  }, [isOpen, isScanning])
+  }, [isOpen, isScanning, selectPos, stopScanner])
 
   if (!isOpen) return null
 
@@ -102,7 +116,9 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
     try {
       // @ts-expect-error torch constraint
       await scannerRef.current?.applyVideoConstraints({ advanced: [{ torch: next }] })
-    } catch { }
+    } catch {
+      // Torch constraint not supported by this camera
+    }
   }
 
   return (
@@ -200,6 +216,15 @@ export const ScanQrModal: React.FC<ScanQrModalProps> = ({
                 </span>
               </div>
             </div>
+
+            {scanError && (
+              <div
+                role="alert"
+                className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs font-medium text-[#B3261E]"
+              >
+                {scanError}
+              </div>
+            )}
 
             {/* Simulation List */}
             <div className="flex flex-col gap-2">

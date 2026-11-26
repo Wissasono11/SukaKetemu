@@ -77,3 +77,14 @@ export async function addMyReportFromSubmission(
   await db.myReports.put(newReport)
   return newReport
 }
+
+export async function clearUserLocalData(): Promise<void> {
+  await Promise.all([
+    db.offlineReports.clear(),
+    db.claimTickets.clear(),
+    db.myReports.clear(),
+  ])
+  if (typeof caches !== 'undefined') {
+    await caches.delete('api-cache').catch(() => undefined)
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { LogOut } from 'lucide-react'
+import { clearUserLocalData } from '../../services/userDataService'
 
 interface ProfileHeaderProps {
   onLogout?: () => void
@@ -18,8 +19,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onLogout }) => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showLogoutConfirm])
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = async () => {
     setShowLogoutConfirm(false)
+    await clearUserLocalData().catch(() => undefined)
     if (onLogout) {
       onLogout()
     } else {
@@ -67,7 +69,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onLogout }) => {
             role="status"
             className="px-3 py-2 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-between gap-2 text-xs text-[#14261B]"
           >
-            <span>Sesi SSO SIA diakhiri. Draft laporan lokal tetap tersimpan.</span>
+            <span>Sesi SSO SIA diakhiri dan data lokal perangkat telah dibersihkan.</span>
             <button
               type="button"
               onClick={() => setLogoutNotice(false)}
@@ -95,7 +97,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onLogout }) => {
               Keluar dari Akun SSO?
             </h3>
             <p className="text-xs text-[#44574B] leading-relaxed">
-              Sesi SSO SIA Anda akan ditutup. Draft laporan lokal di perangkat ini tetap tersimpan.
+              Sesi SSO SIA Anda akan ditutup dan cache tiket, laporan lokal, serta antrean perangkat akan dibersihkan.
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button

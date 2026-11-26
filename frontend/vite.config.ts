@@ -6,11 +6,11 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
 
-// HTTPS lokal dibutuhkan agar kamera (scan QR) bisa dipakai dari HP lewat IP jaringan.
+// HTTPS lokal opsional lewat env var lokal (VITE_DEV_TLS_KEY / VITE_DEV_TLS_CERT).
 // Menggunakan @vitejs/plugin-basic-ssl otomatis menghasilkan sertifikat aman.
-const keyPath = './192.168.0.107+1-key.pem'
-const certPath = './192.168.0.107+1.pem'
-const hasLocalCert = fs.existsSync(keyPath) && fs.existsSync(certPath)
+const keyPath = process.env.VITE_DEV_TLS_KEY || ''
+const certPath = process.env.VITE_DEV_TLS_CERT || ''
+const hasLocalCert = Boolean(keyPath && certPath && fs.existsSync(keyPath) && fs.existsSync(certPath))
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -94,7 +94,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    host: '0.0.0.0',
+    host: process.env.VITE_DEV_HOST || 'localhost',
     ...(hasLocalCert
       ? { https: { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) } }
       : {}),

@@ -34,15 +34,11 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   const [currentStep, setCurrentStep] = useState(1)
 
   // Step 1 State
-  const [photoUrl, setPhotoUrl] = useState(
-    isFound
-      ? 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?q=80&w=600&auto=format&fit=crop'
-      : 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?q=80&w=600&auto=format&fit=crop'
-  )
+  const [photoUrl, setPhotoUrl] = useState('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
-  const [hasRefPhoto, setHasRefPhoto] = useState(!isFound)
+  const [hasRefPhoto, setHasRefPhoto] = useState(false)
   const [isPrivacyBlur, setIsPrivacyBlur] = useState(true)
-  const [timeLost, setTimeLost] = useState('Hari ini, ~14:15 WIB setelah kuliah')
+  const [timeLost, setTimeLost] = useState('')
   const [gedung, setGedung] = useState(initialLocation?.gedung || 'FST (Saintek)')
   const [lantai, setLantai] = useState(initialLocation?.lantai || 'Lantai 1')
   const [ruangan, setRuangan] = useState(
@@ -51,36 +47,37 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
 
   // Step 2 State
   const [category, setCategory] = useState('elektronik')
-  const [title, setTitle] = useState(
-    isFound
-      ? 'Kalkulator Casio FX-991EX Abu-abu'
-      : 'TWS Soundcore R50i Hitam'
-  )
-  const [description, setDescription] = useState(
-    isFound
-      ? 'Ditemukan di atas meja praktikum baris ketiga dekat jendela.'
-      : 'Tertinggal kemungkinan di laci meja praktikum atau selasar FST.'
-  )
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
 
   // Step 3 State
   const [custodyStatus, setCustodyStatus] = useState<'satpam' | 'penemu'>('satpam')
   const [posSatpam, setPosSatpam] = useState(
     initialLocation?.posSatpam || 'Pos Satpam Utama Lobby FST'
   )
-  const [secretFeature, setSecretFeature] = useState(
-    isFound
-      ? 'Stiker kecil logo HIMATIF di dalam penutup baterai'
-      : 'Stiker kecil logo anime di dalam tutup case earbud'
-  )
-  const [contactPhone, setContactPhone] = useState('0812-3456-7890')
+  const [secretFeature, setSecretFeature] = useState('')
+  const [contactPhone, setContactPhone] = useState('')
 
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isOfflineSaved, setIsOfflineSaved] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
+
+    if (title.trim().length < 3) {
+      setSubmitError('Nama & merek barang minimal 3 karakter.')
+      setCurrentStep(2)
+      return
+    }
+    if (!isFound && secretFeature.trim().length < 5) {
+      setSubmitError('Ciri rahasia pemilik wajib diisi minimal 5 karakter.')
+      return
+    }
+
     setIsSubmitting(true)
     const reportPayload = {
       type: reportType,
@@ -157,6 +154,15 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
         <OfflineStatusBanner />
 
         <LaporStepper steps={steps} currentStep={currentStep} />
+
+        {submitError && (
+          <div
+            role="alert"
+            className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-[#B3261E]"
+          >
+            {submitError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between gap-4">
           {currentStep === 1 && (

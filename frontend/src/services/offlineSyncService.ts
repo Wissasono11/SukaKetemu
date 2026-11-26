@@ -1,6 +1,9 @@
 import { db, type OfflineReportItem } from '../db/offlineDb'
 import { submitReport, type CreateReportPayload, type ReportSubmitResponse } from './reportService'
 
+const MAX_SYNC_RETRIES = 5
+const ALLOWED_SYNC_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
 export async function enqueueOfflineReport(payload: CreateReportPayload): Promise<number> {
   let photoBlob: Blob | undefined
   let photoName: string | undefined
@@ -61,12 +64,14 @@ export async function syncPendingReports(
     await db.offlineReports.update(item.id, { syncStatus: 'SYNCING' })
 
     try {
-      // Reconstitute File from Blob if available
+      // Reconstitute File from Blob if available and valid image MIME
       let reconstitutedFile: File | null = null
       if (item.photoBlob && item.photoName) {
-        reconstitutedFile = new File([item.photoBlob], item.photoName, {
-          type: item.photoType || 'image/jpeg',
-        })
+        const mime = item.photoType || item.photoBlob.type || 'image/jpeg'
+        if (!ALLOWED_SYNC_IMAGE_TYPES.has(mime)) {
+          throw new Error('Format foto pada antrean tidak didukung')
+        }
+        reconstitutedFile = new File([item.photoBlob], item.photoName, { type: mime })
       }
 
       const uploadPayload: CreateReportPayload = {
@@ -84,9 +89,10 @@ export async function syncPendingReports(
     } catch (err: unknown) {
       failedCount++
       const message = err instanceof Error ? err.message : 'Unknown sync error'
+      const nextRetry = item.retryCount + 1
       await db.offlineReports.update(item.id, {
-        syncStatus: 'PENDING',
-        retryCount: item.retryCount + 1,
+        syncStatus: nextRetry >= MAX_SYNC_RETRIES ? 'FAILED' : 'PENDING',
+        retryCount: nextRetry,
         lastError: message,
       })
     }

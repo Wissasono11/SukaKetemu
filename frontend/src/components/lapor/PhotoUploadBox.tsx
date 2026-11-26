@@ -147,7 +147,7 @@ export const PhotoUploadBox: React.FC<PhotoUploadBoxProps> = ({
     setCompressionInfo(null)
   }
 
-  const hasPhotoDisplay = isFound || hasRefPhoto
+  const hasPhotoDisplay = Boolean(photoUrl) && (isFound || hasRefPhoto)
 
   return (
     <div className="flex flex-col gap-2.5 p-3.5 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.03)]">

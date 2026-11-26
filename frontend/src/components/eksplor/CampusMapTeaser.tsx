@@ -55,6 +55,15 @@ const CHECKPOINTS: CheckpointLocation[] = [
 
 const FST_CENTER = { lat: -7.78455, lng: 110.39440 }
 
+function escapeHtml(value: string | number): string {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
   selectedPosId,
   onSelectPos,
@@ -113,7 +122,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
               align-items: center;
               gap: 4px;
             ">
-              <span>${cp.shortLabel}</span>
+              <span>${escapeHtml(cp.shortLabel)}</span>
               <span style="
                 background: ${isSelected ? '#ffffff' : '#E2E8F0'};
                 color: ${isSelected ? '#155E38' : '#334155'};
@@ -121,7 +130,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
                 border-radius: 9999px;
                 font-size: 9px;
                 font-weight: 800;
-              ">${cp.itemsCount}</span>
+              ">${escapeHtml(cp.itemsCount)}</span>
             </div>
             <div style="
               width: 20px;
@@ -147,32 +156,27 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
 
       const popupNode = document.createElement('div')
       popupNode.style.fontFamily = "'Plus Jakarta Sans', sans-serif"
-      popupNode.innerHTML = `
-        <p style="font-size: 12px; font-weight: 800; color: #14261B; margin: 0 0 2px 0;">${cp.name}</p>
-        <p style="font-size: 11px; color: #44574B; margin: 0 0 6px 0;">${cp.floor}</p>
-        <button id="pop-btn-${cp.id}" style="
-          width: 100%;
-          background: #155E38;
-          color: #fff;
-          border: none;
-          padding: 6px 10px;
-          border-radius: 6px;
-          font-size: 11px;
-          font-weight: 700;
-          cursor: pointer;
-        ">Lihat ${cp.itemsCount} Barang di Sini</button>
-      `
-      marker.bindPopup(popupNode)
 
-      marker.on('popupopen', () => {
-        const btn = document.getElementById(`pop-btn-${cp.id}`)
-        if (btn) {
-          btn.onclick = () => {
-            onSelectPos(cp.id)
-            document.getElementById(`pos-card-${cp.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          }
-        }
-      })
+      const titleEl = document.createElement('p')
+      titleEl.style.cssText = 'font-size: 12px; font-weight: 800; color: #14261B; margin: 0 0 2px 0;'
+      titleEl.textContent = cp.name
+
+      const floorEl = document.createElement('p')
+      floorEl.style.cssText = 'font-size: 11px; color: #44574B; margin: 0 0 6px 0;'
+      floorEl.textContent = cp.floor
+
+      const actionBtn = document.createElement('button')
+      actionBtn.type = 'button'
+      actionBtn.style.cssText =
+        'width: 100%; background: #155E38; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;'
+      actionBtn.textContent = `Lihat ${cp.itemsCount} Barang di Sini`
+      actionBtn.onclick = () => {
+        onSelectPos(cp.id)
+        document.getElementById(`pos-card-${cp.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+
+      popupNode.append(titleEl, floorEl, actionBtn)
+      marker.bindPopup(popupNode)
 
       marker.on('click', () => onSelectPos(cp.id))
       markersRef.current[cp.id] = marker

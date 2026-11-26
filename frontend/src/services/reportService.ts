@@ -24,12 +24,23 @@ export interface ReportSubmitResponse {
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const ALLOWED_UPLOAD_MIME = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 /**
  * Service pengiriman laporan ke endpoint Express.js Vercel (POST /api/reports)
  * dengan penanganan fallback otomatis untuk demo & offline.
  */
 export async function submitReport(payload: CreateReportPayload): Promise<ReportSubmitResponse> {
+  if (payload.photoFile) {
+    if (!ALLOWED_UPLOAD_MIME.has(payload.photoFile.type)) {
+      throw new Error('Format foto tidak diizinkan. Gunakan JPG, PNG, atau WebP.')
+    }
+    if (payload.photoFile.size > MAX_UPLOAD_BYTES) {
+      throw new Error('Ukuran foto melebihi batas unggah.')
+    }
+  }
+
   // ponytail: if VITE_API_BASE_URL is explicitly configured, submit real multipart FormData.
   // Otherwise, simulate network latency and return mock success ID.
   if (import.meta.env.VITE_API_BASE_URL) {
@@ -49,6 +60,7 @@ export async function submitReport(payload: CreateReportPayload): Promise<Report
 
     const res = await fetch(`${API_BASE_URL}/reports`, {
       method: 'POST',
+      credentials: 'include',
       body: formData,
     })
 
