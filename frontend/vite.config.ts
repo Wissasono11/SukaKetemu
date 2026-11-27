@@ -13,16 +13,16 @@ const certPath = process.env.VITE_DEV_TLS_CERT || ''
 const hasLocalCert = Boolean(keyPath && certPath && fs.existsSync(keyPath) && fs.existsSync(certPath))
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ isPreview }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    basicSsl(),
+    ...(!isPreview && !hasLocalCert ? [basicSsl()] : []),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'SukaKetemu — Smart Lost and Found UIN Sunan Kalijaga',
+        name: 'SukaKetemu: Barang Hilang UIN Suka',
         short_name: 'SukaKetemu',
         description: 'Sistem pelaporan & penemuan barang hilang civitas kampus UIN Sunan Kalijaga',
         theme_color: '#155E38',
@@ -128,5 +128,5 @@ export default defineConfig({
       },
     },
   },
-})
+}))
 
