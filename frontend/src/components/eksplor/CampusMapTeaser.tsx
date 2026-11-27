@@ -72,6 +72,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<{ [key: string]: L.Marker }>({})
+  const initialSelectedPosRef = useRef(selectedPosId)
 
   const selectedPos = CHECKPOINTS.find((c) => c.id === selectedPosId)
 
@@ -100,7 +101,7 @@ export const CampusMapTeaser: React.FC<CampusMapTeaserProps> = ({
     mapInstanceRef.current = map
 
     CHECKPOINTS.forEach((cp) => {
-      const isSelected = selectedPosId === cp.id
+      const isSelected = initialSelectedPosRef.current === cp.id
       const icon = L.divIcon({
         className: 'custom-checkpoint-pin',
         iconSize: [84, 46],

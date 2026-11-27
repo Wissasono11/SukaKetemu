@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { X, ShieldCheck, FileCheck, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ClaimTicket } from '../../types/lostFound'
 import { INITIAL_CLAIM_TICKETS } from '../../data/mockItems'
@@ -15,8 +15,12 @@ interface CekKlaimModalProps {
   onTicketsChange?: (tickets: ClaimTicket[]) => void
 }
 
-export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
-  isOpen,
+export const CekKlaimModal: React.FC<CekKlaimModalProps> = (props) => {
+  if (!props.isOpen) return null
+  return <CekKlaimModalContent {...props} />
+}
+
+const CekKlaimModalContent: React.FC<CekKlaimModalProps> = ({
   onClose,
   onNavigateToPos,
   tickets: propTickets,
@@ -37,16 +41,26 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
   const [cancelModalTicketId, setCancelModalTicketId] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const tabTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true)
-      const timer = setTimeout(() => setIsLoading(false), 350)
-      return () => clearTimeout(timer)
+    const timer = window.setTimeout(() => setIsLoading(false), 350)
+    return () => {
+      window.clearTimeout(timer)
+      if (tabTimerRef.current) window.clearTimeout(tabTimerRef.current)
     }
-  }, [isOpen, activeTab])
+  }, [])
 
-  if (!isOpen) return null
+  const handleTabSwitch = (tab: 'aktif' | 'riwayat') => {
+    if (tab === activeTab) return
+    setActiveTab(tab)
+    setIsLoading(true)
+    if (tabTimerRef.current) window.clearTimeout(tabTimerRef.current)
+    tabTimerRef.current = window.setTimeout(() => {
+      setIsLoading(false)
+      tabTimerRef.current = null
+    }, 250)
+  }
 
   const activeTickets = tickets.filter(
     (t) => t.status === 'ready_for_pickup' || t.status === 'waiting_review'
@@ -119,12 +133,12 @@ export const CekKlaimModal: React.FC<CekKlaimModalProps> = ({
 
         {/* Tab Filter: Aktif vs Riwayat */}
         <div className="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-semibold">
-          <button type="button" onClick={() => setActiveTab('aktif')} className={tabBtnClass('aktif')}>
+          <button type="button" onClick={() => handleTabSwitch('aktif')} className={tabBtnClass('aktif')}>
             <span>Klaim Aktif</span>
             <span className={tabBadgeClass('aktif')}>{activeTickets.length}</span>
           </button>
 
-          <button type="button" onClick={() => setActiveTab('riwayat')} className={tabBtnClass('riwayat')}>
+          <button type="button" onClick={() => handleTabSwitch('riwayat')} className={tabBtnClass('riwayat')}>
             <span>Riwayat Selesai</span>
             <span className={tabBadgeClass('riwayat')}>{historyTickets.length}</span>
           </button>

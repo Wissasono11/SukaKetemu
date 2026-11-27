@@ -32,22 +32,28 @@ export function useOnlineStatus() {
   }, [isSyncing, refreshPendingCount])
 
   useEffect(() => {
-    refreshPendingCount()
+    let active = true
+    getPendingOfflineReportsCount()
+      .then((count) => {
+        if (active) setPendingCount(count)
+      })
+      .catch(() => undefined)
 
     const handleOnline = () => {
       setIsOnline(true)
-      triggerSync()
+      void triggerSync()
     }
 
     const handleOffline = () => {
       setIsOnline(false)
-      refreshPendingCount()
+      void refreshPendingCount()
     }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
     return () => {
+      active = false
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }

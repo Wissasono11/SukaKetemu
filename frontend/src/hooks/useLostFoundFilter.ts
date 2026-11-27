@@ -1,25 +1,48 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, type SetStateAction } from 'react'
 import type { LostFoundItem, PosSatpamInfo, FilterCriteria, ItemCategory } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
 import { filterLostFoundItems } from '../data/mockItems'
 import { getFilterLabels, matchPosSatpam } from '../utils/filterUtils'
 
 export function useLostFoundFilter(items: LostFoundItem[], posList: PosSatpamInfo[]) {
-  const [criteria, setCriteria] = useState<FilterCriteria>(DEFAULT_FILTER_CRITERIA)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [criteria, setCriteriaState] = useState<FilterCriteria>(DEFAULT_FILTER_CRITERIA)
+  const [searchQuery, setSearchQueryState] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const timerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current)
+    }
+  }, [])
+
+  const triggerLoading = useCallback((durationMs = 280) => {
+    setIsLoading(true)
+    if (timerRef.current) window.clearTimeout(timerRef.current)
+    timerRef.current = window.setTimeout(() => {
+      setIsLoading(false)
+      timerRef.current = null
+    }, durationMs)
+  }, [])
+
+  const setCriteria = useCallback(
+    (updater: SetStateAction<FilterCriteria>) => {
+      setCriteriaState(updater)
+      triggerLoading()
+    },
+    [triggerLoading]
+  )
+
+  const setSearchQuery = useCallback(
+    (q: string) => {
+      setSearchQueryState(q)
+      triggerLoading()
+    },
+    [triggerLoading]
+  )
 
   const labels = useMemo(() => getFilterLabels(criteria, posList), [criteria, posList])
   const isFiltered = searchQuery.trim() !== '' || labels.activeCount > 0
-
-  // Emulate rapid backend network fetching with zero layout shift
-  useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 280)
-    return () => clearTimeout(timer)
-  }, [criteria, searchQuery])
 
   const filteredItems = useMemo(
     () => filterLostFoundItems(items, criteria, searchQuery),
@@ -27,32 +50,35 @@ export function useLostFoundFilter(items: LostFoundItem[], posList: PosSatpamInf
   )
 
   const resetFilters = useCallback(() => {
-    setCriteria(DEFAULT_FILTER_CRITERIA)
-    setSearchQuery('')
-  }, [])
+    setCriteriaState(DEFAULT_FILTER_CRITERIA)
+    setSearchQueryState('')
+    triggerLoading()
+  }, [triggerLoading])
 
-  const setCategory = useCallback((cat: ItemCategory) => {
-    setCriteria((prev) => ({ ...prev, category: cat }))
-  }, [])
+  const setCategory = useCallback(
+    (cat: ItemCategory) => {
+      setCriteriaState((prev) => ({ ...prev, category: cat }))
+      triggerLoading()
+    },
+    [triggerLoading]
+  )
 
   const filterByPosName = useCallback(
     (posName: string) => {
       const matched = matchPosSatpam(posList, posName)
       if (matched) {
-        setCriteria((prev) => ({ ...prev, posId: matched.id }))
+        setCriteriaState((prev) => ({ ...prev, posId: matched.id }))
       } else {
-        setSearchQuery(posName)
+        setSearchQueryState(posName)
       }
+      triggerLoading()
     },
-    [posList]
+    [posList, triggerLoading]
   )
 
   const refresh = useCallback(() => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 400)
-  }, [])
+    triggerLoading(400)
+  }, [triggerLoading])
 
   return {
     criteria,

@@ -29,8 +29,12 @@ interface NotificationDrawerProps {
   onSelectNotification: (item: AppNotification) => void
 }
 
-export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
-  isOpen,
+export const NotificationDrawer: React.FC<NotificationDrawerProps> = (props) => {
+  if (!props.isOpen) return null
+  return <NotificationDrawerContent {...props} />
+}
+
+const NotificationDrawerContent: React.FC<NotificationDrawerProps> = ({
   onClose,
   notifications,
   onMarkAllAsRead,
@@ -40,14 +44,9 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true)
-      const timer = setTimeout(() => setIsLoading(false), 250)
-      return () => clearTimeout(timer)
-    }
-  }, [isOpen])
-
-  if (!isOpen) return null
+    const timer = window.setTimeout(() => setIsLoading(false), 250)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

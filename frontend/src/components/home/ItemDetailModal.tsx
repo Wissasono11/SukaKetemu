@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   X,
   Shield,
@@ -31,14 +31,12 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
 }) => {
   const [isClaimed, setIsClaimed] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isImageLoading, setIsImageLoading] = useState(true)
+  const [loadedItemId, setLoadedItemId] = useState<string | null>(null)
   const { copied, copy } = useCopyToClipboard()
 
-  useEffect(() => {
-    setIsImageLoading(true)
-  }, [item?.id])
-
   if (!item) return null
+
+  const isImageLoading = loadedItemId !== item.id
 
   const isPosSatpam = item.custody === 'pos_satpam'
 
@@ -108,8 +106,8 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
           <img
             src={item.imageUrl}
             alt={item.imageAlt}
-            onLoad={() => setIsImageLoading(false)}
-            onError={() => setIsImageLoading(false)}
+            onLoad={() => setLoadedItemId(item.id)}
+            onError={() => setLoadedItemId(item.id)}
             className={`w-full h-full object-cover transition-opacity duration-300 ${
               isImageLoading ? 'opacity-0' : 'opacity-100'
             } ${item.isPrivacySensitive ? 'blur-lg scale-110' : ''}`}

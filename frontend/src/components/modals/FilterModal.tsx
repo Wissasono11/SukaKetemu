@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   X,
   SlidersHorizontal,
@@ -45,8 +45,12 @@ const CUSTODY_OPTIONS: { id: FilterCriteria['custody']; label: string; icon?: Re
   { id: 'dibawa_penemu', label: 'Di Penemu', icon: User },
 ]
 
-export const FilterModal: React.FC<FilterModalProps> = ({
-  isOpen,
+export const FilterModal: React.FC<FilterModalProps> = (props) => {
+  if (!props.isOpen) return null
+  return <FilterModalContent key={JSON.stringify(props.currentCriteria)} {...props} />
+}
+
+const FilterModalContent: React.FC<FilterModalProps> = ({
   onClose,
   currentCriteria,
   onApply,
@@ -55,10 +59,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 }) => {
   const [temp, setTemp] = useState<FilterCriteria>(currentCriteria)
 
-  useEffect(() => {
-    setTemp(currentCriteria)
-  }, [isOpen, currentCriteria])
-
   const activeCount = [temp.category, temp.posId, temp.custody, temp.dateRange].filter(
     (v) => v !== 'all'
   ).length
@@ -66,8 +66,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   const previewMatches = useMemo(() => {
     return filterLostFoundItems(INITIAL_ITEMS, temp, searchQuery)
   }, [temp, searchQuery])
-
-  if (!isOpen) return null
 
   const storageOptions = [
     { id: 'all', name: 'Semua Titik Penyimpanan', detail: 'Semua pos satpam & penemu', icon: LayoutGrid },

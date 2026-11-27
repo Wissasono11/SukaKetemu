@@ -17,7 +17,6 @@ interface ItemCardProps {
 export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
   const [imgError, setImgError] = useState(false)
   const isPosSatpam = item.custody === 'pos_satpam'
-  const CatIcon = getCategoryIcon(item.category)
 
   return (
     <article
@@ -51,7 +50,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
         )}
 
         <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-md shadow-xs">
-          <CatIcon className="w-3 h-3 text-[#44574B]" />
+          {React.createElement(getCategoryIcon(item.category), {
+            className: 'w-3 h-3 text-[#44574B]',
+            'aria-hidden': true,
+          })}
           <span className="text-[10px] font-medium text-[#14261B]">
             {item.categoryLabel}
           </span>

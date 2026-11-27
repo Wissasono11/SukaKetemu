@@ -19,7 +19,14 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
   onNavigateToPos,
   onScanQr,
 }) => {
-  const [selectedPosId, setSelectedPosId] = useState<string | null>(initialSelectedPosId || null)
+  const [posOverride, setPosOverride] = useState<{
+    base: string | null | undefined
+    posId: string
+  } | null>(null)
+  const selectedPosId =
+    posOverride && posOverride.base === initialSelectedPosId
+      ? posOverride.posId
+      : initialSelectedPosId || null
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -29,7 +36,6 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
 
   useEffect(() => {
     if (initialSelectedPosId) {
-      setSelectedPosId(initialSelectedPosId)
       const timer = setTimeout(() => {
         const el = document.getElementById(`pos-card-${initialSelectedPosId}`)
         if (el) {
@@ -41,7 +47,7 @@ export const EksplorPage: React.FC<EksplorPageProps> = ({
   }, [initialSelectedPosId])
 
   const handleSelectPosFromMap = (posId: string) => {
-    setSelectedPosId(posId)
+    setPosOverride({ base: initialSelectedPosId, posId })
   }
 
   // Calculate items held at pos satpam
