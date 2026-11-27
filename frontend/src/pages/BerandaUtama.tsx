@@ -19,7 +19,7 @@ import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
 import { getClaimTickets, saveClaimTicket, updateClaimTicketStatus } from '../services/userDataService'
 import type { AppNotification } from '../components/modals/NotificationDrawer'
-import { AiMatchSkeleton } from '../components/modals/aimatch/AiMatchSkeleton'
+import { AiMatchSkeleton } from '../components/cocok-ai/AiMatchSkeleton'
 
 const EksplorPage = lazy(() =>
   import('./EksplorPage').then((m) => ({ default: m.EksplorPage }))
@@ -107,7 +107,6 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
     'Lapor Barang Temuan': () => onNavigateToLapor?.('found'),
     'Scan QR Pos Satpam': () => setModal('scanQr'),
     'Cek Status Klaim': () => setModal('cekKlaim'),
-    'Pencocokan AI Multimodal': () => setActiveTab('cocok-ai'),
   }
 
   const handleRequestAiMatchClaim = (match: AiMatchItem) => {
@@ -274,6 +273,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
               onRejectMatch={(matchId) =>
                 setAiMatches((prev) =>
                   prev.map((m) => (m.id === matchId ? { ...m, status: 'rejected' as const } : m))
+                )
+              }
+              onUndoRejectMatch={(matchId) =>
+                setAiMatches((prev) =>
+                  prev.map((m) => (m.id === matchId ? { ...m, status: 'unresolved' as const } : m))
                 )
               }
               onRequestClaim={handleRequestAiMatchClaim}

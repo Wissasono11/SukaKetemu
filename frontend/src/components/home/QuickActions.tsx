@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileSearch, Camera, QrCode, ShieldCheck, Radar } from 'lucide-react'
+import { FileSearch, Camera, QrCode, ShieldCheck } from 'lucide-react'
 
 interface QuickActionsProps {
   onActionClick: (title: string) => void
@@ -11,7 +11,7 @@ const QUICK_BTN_CLASS =
 export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => {
   return (
     <section aria-label="Aksi Cepat Layanan" className="w-full">
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         <button
           type="button"
           onClick={() => onActionClick('Lapor Barang Hilang')}
@@ -61,19 +61,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
           </div>
           <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
             Cek Klaim
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onActionClick('Pencocokan AI Multimodal')}
-          className={QUICK_BTN_CLASS}
-        >
-          <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-[#155E38] shadow-[0_2px_6px_rgba(20,38,27,0.03)] group-hover:bg-slate-50 group-active:scale-95 transition-all">
-            <Radar className="w-5 h-5 text-[#155E38]" aria-hidden="true" />
-          </div>
-          <span className="text-[11px] font-medium text-[#44574B] text-center leading-tight">
-            Radar AI
           </span>
         </button>
       </div>

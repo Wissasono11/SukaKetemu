@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { RefreshCw, FileCheck, Clock, Plus, AlertTriangle } from 'lucide-react'
+import {
+  RefreshCw,
+  FileCheck,
+  Clock,
+  Plus,
+  AlertTriangle,
+  RotateCcw,
+} from 'lucide-react'
 import type { AiMatchItem, UserReportItem } from '../types/lostFound'
 import { getMyReports } from '../services/userDataService'
-import { AiMatchHeroCard } from '../components/modals/aimatch/AiMatchHeroCard'
-import { AiMatchAlternativeItem } from '../components/modals/aimatch/AiMatchAlternativeItem'
-import { AiMatchSkeleton } from '../components/modals/aimatch/AiMatchSkeleton'
+import { AiMatchHeroCard } from '../components/cocok-ai/AiMatchHeroCard'
+import { AiMatchAlternativeItem } from '../components/cocok-ai/AiMatchAlternativeItem'
+import { AiMatchSkeleton } from '../components/cocok-ai/AiMatchSkeleton'
 
 interface CocokAiPageProps {
   matches: AiMatchItem[]
   onRejectMatch: (matchId: string) => void
+  onUndoRejectMatch?: (matchId: string) => void
   onRequestClaim: (match: AiMatchItem) => void
   onNavigateToLapor?: (type: 'lost' | 'found') => void
   onBrowseBeranda?: () => void
@@ -17,6 +25,7 @@ interface CocokAiPageProps {
 export const CocokAiPage: React.FC<CocokAiPageProps> = ({
   matches,
   onRejectMatch,
+  onUndoRejectMatch,
   onRequestClaim,
   onNavigateToLapor,
   onBrowseBeranda,
@@ -26,9 +35,10 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
   const [heroByReport, setHeroByReport] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [isSwitchingReport, setIsSwitchingReport] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const switchTimerRef = useRef<number | null>(null)
+  const [undoMatch, setUndoMatch] = useState<AiMatchItem | null>(null)
+  const undoTimerRef = useRef<number | null>(null)
+  const heroSectionRef = useRef<HTMLDivElement | null>(null)
 
   const applyLoadedReports = useCallback((activeLost: UserReportItem[]) => {
     setLostReports(activeLost)
@@ -67,8 +77,8 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
 
     return () => {
       active = false
-      if (switchTimerRef.current) {
-        clearTimeout(switchTimerRef.current)
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current)
       }
     }
   }, [applyLoadedReports])
@@ -92,19 +102,6 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
     }
   }
 
-  const handleSelectReport = (reportId: string) => {
-    if (reportId === selectedReportId) return
-    setSelectedReportId(reportId)
-    setIsSwitchingReport(true)
-    if (switchTimerRef.current) {
-      clearTimeout(switchTimerRef.current)
-    }
-    switchTimerRef.current = window.setTimeout(() => {
-      setIsSwitchingReport(false)
-      switchTimerRef.current = null
-    }, 180)
-  }
-
   const selectedReport =
     lostReports.find((r) => r.id === selectedReportId) || lostReports[0] || null
 
@@ -120,31 +117,76 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
   const preferredHeroId = selectedReport ? heroByReport[selectedReport.id] : undefined
   const currentHero =
     reportMatches.find((m) => m.id === preferredHeroId) || reportMatches[0] || null
-  const alternativeMatches = reportMatches.filter((m) => m.id !== currentHero?.id)
 
   const handleSelectHero = (match: AiMatchItem) => {
     if (!selectedReport) return
     setHeroByReport((prev) => ({ ...prev, [selectedReport.id]: match.id }))
+    heroSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  const handleRejectWithUndo = (matchId: string) => {
+    const rejectedItem = reportMatches.find((m) => m.id === matchId) ?? null
+    if (selectedReport && heroByReport[selectedReport.id] === matchId) {
+      const nextFallback = reportMatches.find((m) => m.id !== matchId)
+      setHeroByReport((prev) => ({
+        ...prev,
+        [selectedReport.id]: nextFallback ? nextFallback.id : '',
+      }))
+    }
+
+    onRejectMatch(matchId)
+
+    if (rejectedItem && onUndoRejectMatch) {
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current)
+      }
+      setUndoMatch(rejectedItem)
+      undoTimerRef.current = window.setTimeout(() => {
+        setUndoMatch(null)
+        undoTimerRef.current = null
+      }, 5000)
+    }
+  }
+
+  const handleUndoReject = () => {
+    if (!undoMatch || !onUndoRejectMatch) return
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      undoTimerRef.current = null
+    }
+    onUndoRejectMatch(undoMatch.id)
+    setHeroByReport((prev) => ({
+      ...prev,
+      [undoMatch.lostReportId]: undoMatch.id,
+    }))
+    setSelectedReportId(undoMatch.lostReportId)
+    setUndoMatch(null)
+  }
+
+  const headerSubtitle = isLoading
+    ? 'Mencari kecocokan dari daftar temuan kampus...'
+    : selectedReport?.aiStatus === 'PENDING_VECTOR'
+      ? 'Laporan sedang dicocokkan dengan inventaris temuan'
+      : reportMatches.length > 0
+        ? `Menampilkan ${reportMatches.length} kandidat kecocokan teratas`
+        : 'Mencocokkan laporan hilang Anda dengan temuan kampus'
+
   return (
-    <main className="flex-1 px-4 pt-4 pb-24 flex flex-col gap-4 text-left">
+    <main className="flex-1 px-4 pt-4 pb-28 flex flex-col gap-3.5 text-left">
       {/* Header Ringkas Radar AI */}
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-col min-w-0">
           <h2 className="text-base font-extrabold text-[#14261B]">
             Radar Kecocokan
           </h2>
-          <p className="text-xs text-[#44574B] mt-0.5">
-            5 kandidat temuan paling sesuai untuk laporan hilang Anda
-          </p>
+          <p className="text-xs text-[#44574B] mt-0.5">{headerSubtitle}</p>
         </div>
 
         <button
           type="button"
           disabled={isLoading || isRefreshing}
           onClick={handleRefresh}
-          className="min-h-[44px] px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#14261B] inline-flex items-center gap-1.5 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38]"
+          className="min-h-[44px] px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-[#14261B] inline-flex items-center gap-1.5 flex-shrink-0 transition-colors disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38]"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 text-[#155E38] ${
@@ -156,12 +198,12 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
         </button>
       </header>
 
-      {/* Pemilih Laporan Hilang Aktif (Underline Tabs) */}
+      {/* Pemilih Laporan Hilang Aktif */}
       {!isLoading && !loadError && lostReports.length > 0 && (
         <div
           role="tablist"
           aria-label="Laporan Barang Hilang Aktif"
-          className="flex items-center gap-5 border-b border-slate-200 overflow-x-auto no-scrollbar"
+          className="flex items-center gap-2 overflow-x-auto pb-0.5 no-scrollbar"
         >
           {lostReports.map((rep) => {
             const isSelected = selectedReport?.id === rep.id
@@ -170,29 +212,41 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
             ).length
             const isPending = rep.aiStatus === 'PENDING_VECTOR'
 
+            const statusDotClass = isPending
+              ? 'bg-[#D97706]'
+              : unresolvedCount > 0
+                ? 'bg-[#155E38]'
+                : 'bg-slate-300'
+
             return (
               <button
                 key={rep.id}
                 type="button"
                 role="tab"
                 aria-selected={isSelected}
-                onClick={() => handleSelectReport(rep.id)}
-                className={`relative min-h-[44px] pb-2.5 text-xs whitespace-nowrap transition-colors flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38] rounded-t-md ${
+                onClick={() => setSelectedReportId(rep.id)}
+                className={`min-h-[44px] px-3 py-2 rounded-xl border text-xs whitespace-nowrap transition-colors flex items-center gap-2 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#155E38] ${
                   isSelected
-                    ? 'font-bold text-[#155E38]'
-                    : 'font-medium text-[#44574B] hover:text-[#14261B]'
+                    ? 'border-[#155E38] bg-[#E4F1E8]/60 font-bold text-[#0F4A2C]'
+                    : 'border-slate-200 bg-white font-medium text-[#44574B] hover:border-slate-300 hover:text-[#14261B]'
                 }`}
               >
-                <span className="max-w-[165px] truncate">{rep.title}</span>
-                <span className="text-[11px] font-semibold text-[#44574B] tabular-nums">
-                  {isPending ? '(Proses)' : `(${unresolvedCount})`}
+                <span
+                  aria-hidden="true"
+                  className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDotClass}`}
+                />
+                <span className="max-w-[160px] truncate">{rep.title}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums ${
+                    isPending
+                      ? 'bg-[#FEF3C7] text-[#92400E]'
+                      : unresolvedCount > 0
+                        ? 'bg-white text-[#155E38] border border-[#155E38]/20'
+                        : 'bg-slate-100 text-[#44574B]'
+                  }`}
+                >
+                  {isPending ? 'Proses' : unresolvedCount}
                 </span>
-                {isSelected && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-0 inset-x-0 h-0.5 bg-[#155E38]"
-                  />
-                )}
               </button>
             )
           })}
@@ -200,7 +254,7 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
       )}
 
       {/* Konten Utama */}
-      {isLoading || isRefreshing || isSwitchingReport ? (
+      {isLoading || isRefreshing ? (
         <AiMatchSkeleton showTabs={isLoading} />
       ) : loadError ? (
         <section
@@ -270,28 +324,29 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
           )}
         </section>
       ) : currentHero ? (
-        <div className="flex flex-col gap-4">
+        <div ref={heroSectionRef} className="scroll-mt-16 flex flex-col gap-4">
           <AiMatchHeroCard
             item={currentHero}
             onClaim={onRequestClaim}
-            onReject={onRejectMatch}
+            onReject={handleRejectWithUndo}
           />
 
-          {alternativeMatches.length > 0 && (
-            <section aria-label="Kandidat Lainnya" className="flex flex-col gap-2">
+          {reportMatches.length > 1 && (
+            <section aria-label="Daftar Semua Kandidat" className="flex flex-col gap-2">
               <div className="flex items-baseline justify-between px-0.5">
                 <h3 className="text-xs font-bold text-[#14261B]">
-                  Kandidat Lainnya ({alternativeMatches.length})
+                  Semua Kandidat ({reportMatches.length})
                 </h3>
                 <span className="text-[11px] text-[#44574B]">
-                  Pilih baris untuk meninjau
+                  Urut kecocokan tertinggi
                 </span>
               </div>
               <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-200 overflow-hidden">
-                {alternativeMatches.map((alt) => (
+                {reportMatches.map((candidate) => (
                   <AiMatchAlternativeItem
-                    key={alt.id}
-                    item={alt}
+                    key={candidate.id}
+                    item={candidate}
+                    isActive={candidate.id === currentHero.id}
                     onSelect={handleSelectHero}
                   />
                 ))}
@@ -320,6 +375,29 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
             </button>
           )}
         </section>
+      )}
+
+      {/* Toast Urungkan Penolakan */}
+      {undoMatch && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[416px]"
+        >
+          <div className="rounded-xl bg-[#14261B] text-white px-3.5 py-2.5 shadow-lg flex items-center justify-between gap-3">
+            <span className="text-xs leading-snug truncate">
+              Kandidat #{undoMatch.rank} ditandai bukan milik Anda
+            </span>
+            <button
+              type="button"
+              onClick={handleUndoReject}
+              className="min-h-[36px] px-2.5 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-bold text-white inline-flex items-center gap-1 flex-shrink-0 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>Urungkan</span>
+            </button>
+          </div>
+        </div>
       )}
     </main>
   )
