@@ -8,6 +8,7 @@ export interface CreateReportPayload {
     lantai: string
     ruangan: string
   }
+  qrCheckpointCode?: string
   custody?: 'pos_satpam' | 'dibawa_penemu'
   posId?: string
   secretFeature?: string
@@ -50,6 +51,7 @@ export async function submitReport(payload: CreateReportPayload): Promise<Report
     formData.append('category', payload.category)
     formData.append('description', payload.description)
     formData.append('location', JSON.stringify(payload.location))
+    if (payload.qrCheckpointCode) formData.append('qrCheckpointCode', payload.qrCheckpointCode)
     if (payload.custody) formData.append('custody', payload.custody)
     if (payload.posId) formData.append('posId', payload.posId)
     if (payload.secretFeature) formData.append('secretFeature', payload.secretFeature)

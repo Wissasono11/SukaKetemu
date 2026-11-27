@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Edit3,
   ArrowRight,
@@ -8,6 +8,7 @@ import {
   CupSoda,
   Moon,
   Shapes,
+  AlertCircle,
 } from 'lucide-react'
 
 interface WizardStep2Props {
@@ -42,6 +43,17 @@ export const WizardStep2: React.FC<WizardStep2Props> = ({
   onPrev,
   onNext,
 }) => {
+  const [stepError, setStepError] = useState<string | null>(null)
+
+  const handleNextStep = () => {
+    if (title.trim().length < 3) {
+      setStepError('Nama & merek barang wajib diisi minimal 3 karakter.')
+      return
+    }
+    setStepError(null)
+    onNext()
+  }
+
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-200">
       <div className="flex flex-col gap-3.5 p-4 rounded-2xl bg-white border border-slate-100 shadow-[0_2px_8px_rgba(20,38,27,0.03)]">
@@ -85,7 +97,10 @@ export const WizardStep2: React.FC<WizardStep2Props> = ({
             id="item-title"
             type="text"
             value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
+            onChange={(e) => {
+              setStepError(null)
+              onTitleChange(e.target.value)
+            }}
             placeholder="Contoh: Kalkulator Casio FX-991EX Abu-abu"
             className="w-full bg-slate-50 text-[#14261B] rounded-xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#155E38]/20 border border-slate-200"
           />
@@ -106,6 +121,16 @@ export const WizardStep2: React.FC<WizardStep2Props> = ({
         </div>
       </div>
 
+      {stepError && (
+        <div
+          role="alert"
+          className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs font-semibold text-[#B3261E]"
+        >
+          <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          <span>{stepError}</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2 mt-2">
         <button
           type="button"
@@ -116,7 +141,7 @@ export const WizardStep2: React.FC<WizardStep2Props> = ({
         </button>
         <button
           type="button"
-          onClick={onNext}
+          onClick={handleNextStep}
           className="py-3 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm"
         >
           <span>{isFound ? 'Lanjut ke Kustodi' : 'Lanjut ke Validasi'}</span>

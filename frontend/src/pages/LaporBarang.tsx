@@ -44,6 +44,7 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
   const [ruangan, setRuangan] = useState(
     initialLocation?.ruangan || (isFound ? 'Pos Satpam' : 'Lobby')
   )
+  const [qrCheckpointCode, setQrCheckpointCode] = useState<string | undefined>(undefined)
 
   // Step 2 State
   const [category, setCategory] = useState('elektronik')
@@ -77,19 +78,24 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
       setSubmitError('Ciri rahasia pemilik wajib diisi minimal 5 karakter.')
       return
     }
+    if (isFound && custodyStatus === 'penemu' && contactPhone.trim().length < 8) {
+      setSubmitError('Masukkan nomor WhatsApp penemu agar pemilik dapat menghubungi setelah verifikasi.')
+      return
+    }
 
     setIsSubmitting(true)
     const reportPayload = {
       type: reportType,
-      title,
+      title: title.trim(),
       category,
-      description,
+      description: description.trim(),
       location: { gedung, lantai, ruangan },
+      qrCheckpointCode,
       custody: (custodyStatus === 'satpam' ? 'pos_satpam' : 'dibawa_penemu') as 'pos_satpam' | 'dibawa_penemu',
-      posId: posSatpam,
-      secretFeature,
-      contactPhone,
-      timeLost: isFound ? undefined : timeLost,
+      posId: custodyStatus === 'satpam' ? posSatpam : undefined,
+      secretFeature: secretFeature.trim() || undefined,
+      contactPhone: contactPhone.trim() || undefined,
+      timeLost: isFound ? undefined : timeLost.trim() || undefined,
       photoFile,
       isPrivacyBlur,
     }
@@ -184,6 +190,7 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
               onLantaiChange={setLantai}
               ruangan={ruangan}
               onRuanganChange={setRuangan}
+              onQrCheckpointChange={setQrCheckpointCode}
               onNext={() => setCurrentStep(2)}
             />
           )}

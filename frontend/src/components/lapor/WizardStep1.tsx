@@ -1,5 +1,5 @@
-import React from 'react'
-import { ArrowRight, Clock } from 'lucide-react'
+import React, { useState } from 'react'
+import { ArrowRight, Clock, AlertCircle } from 'lucide-react'
 import { PhotoUploadBox } from './PhotoUploadBox'
 import { LocationPickerBox } from './LocationPickerBox'
 
@@ -21,6 +21,7 @@ interface WizardStep1Props {
   onLantaiChange: (val: string) => void
   ruangan: string
   onRuanganChange: (val: string) => void
+  onQrCheckpointChange?: (code: string | undefined) => void
   onNext: () => void
 }
 
@@ -41,8 +42,20 @@ export const WizardStep1: React.FC<WizardStep1Props> = ({
   onLantaiChange,
   ruangan,
   onRuanganChange,
+  onQrCheckpointChange,
   onNext,
 }) => {
+  const [stepError, setStepError] = useState<string | null>(null)
+
+  const handleNextStep = () => {
+    if (isFound && !photoUrl) {
+      setStepError('Unggah atau pilih foto barang temuan terlebih dahulu.')
+      return
+    }
+    setStepError(null)
+    onNext()
+  }
+
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-200">
       {/* Khusus Hilang: Input Waktu */}
@@ -67,7 +80,10 @@ export const WizardStep1: React.FC<WizardStep1Props> = ({
       <PhotoUploadBox
         isFound={isFound}
         photoUrl={photoUrl}
-        onPhotoChange={onPhotoChange}
+        onPhotoChange={(url) => {
+          setStepError(null)
+          onPhotoChange(url)
+        }}
         onPhotoFileChange={onPhotoFileChange}
         hasRefPhoto={hasRefPhoto}
         onHasRefPhotoChange={onHasRefPhotoChange}
@@ -84,11 +100,22 @@ export const WizardStep1: React.FC<WizardStep1Props> = ({
         onLantaiChange={onLantaiChange}
         ruangan={ruangan}
         onRuanganChange={onRuanganChange}
+        onQrCheckpointChange={onQrCheckpointChange}
       />
+
+      {stepError && (
+        <div
+          role="alert"
+          className="p-3 rounded-xl bg-red-50 border border-red-200 flex items-center gap-2 text-xs font-semibold text-[#B3261E]"
+        >
+          <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+          <span>{stepError}</span>
+        </div>
+      )}
 
       <button
         type="button"
-        onClick={onNext}
+        onClick={handleNextStep}
         className="w-full mt-2 py-3 px-4 rounded-xl bg-[#155E38] hover:bg-[#0F4A2C] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
       >
         <span>Lanjut ke Kategori &amp; Detail</span>

@@ -14,6 +14,7 @@ interface LocationPickerBoxProps {
   onLantaiChange: (val: string) => void
   ruangan: string
   onRuanganChange: (val: string) => void
+  onQrCheckpointChange?: (code: string | undefined) => void
 }
 
 export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
@@ -24,6 +25,7 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
   onLantaiChange,
   ruangan,
   onRuanganChange,
+  onQrCheckpointChange,
 }) => {
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [showQrScanner, setShowQrScanner] = useState(false)
@@ -47,12 +49,19 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
     onGedungChange(newGedung)
     onLantaiChange(newLantai)
     onRuanganChange(getRuanganList(newGedung, newLantai)[0] ?? '')
+    onQrCheckpointChange?.(undefined)
   }
 
   // Ganti lantai -> ruangan ikut menyesuaikan
   const handleLantaiChange = (newLantai: string) => {
     onLantaiChange(newLantai)
     onRuanganChange(getRuanganList(gedung, newLantai)[0] ?? '')
+    onQrCheckpointChange?.(undefined)
+  }
+
+  const handleRuanganChange = (newRuangan: string) => {
+    onRuanganChange(newRuangan)
+    onQrCheckpointChange?.(undefined)
   }
 
   const handleLocationScan = useCallback(
@@ -60,13 +69,14 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
       onGedungChange(location.gedung)
       onLantaiChange(location.lantai)
       onRuanganChange(location.ruangan)
+      onQrCheckpointChange?.(location.id)
       setShowQrScanner(false)
 
-      setScanNotice(`${location.ruangan} — ${location.gedung}, ${location.lantai}`)
+      setScanNotice(`${location.ruangan} (${location.id}), ${location.gedung}, ${location.lantai}`)
       window.clearTimeout(noticeTimer.current)
       noticeTimer.current = window.setTimeout(() => setScanNotice(''), 3500)
     },
-    [onGedungChange, onLantaiChange, onRuanganChange]
+    [onGedungChange, onLantaiChange, onRuanganChange, onQrCheckpointChange]
   )
 
   return (
@@ -121,7 +131,7 @@ export const LocationPickerBox: React.FC<LocationPickerBoxProps> = ({
           {[
             { label: 'Gedung', val: gedung, set: handleGedungChange, list: gedungOptions },
             { label: 'Lantai', val: lantai, set: handleLantaiChange, list: lantaiOptions },
-            { label: 'Ruangan', val: ruangan, set: onRuanganChange, list: ruanganOptions },
+            { label: 'Ruangan', val: ruangan, set: handleRuanganChange, list: ruanganOptions },
           ].map(({ label, val, set, list }) => (
             <div key={label} className="flex flex-col">
               <label className="text-[10px] font-bold text-[#44574B] mb-1">{label}</label>

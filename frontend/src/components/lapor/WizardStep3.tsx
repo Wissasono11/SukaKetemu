@@ -8,6 +8,7 @@ import {
   CheckCircle,
   Loader2,
 } from 'lucide-react'
+import { POS_SATPAM_LIST } from '../../data/mockItems'
 
 interface WizardStep3Props {
   isFound: boolean
@@ -97,17 +98,37 @@ export const WizardStep3: React.FC<WizardStep3Props> = ({
                   </div>
 
                   {item.id === 'satpam' && isSelected && (
-                    <div className="mt-2 pt-2 border-t border-[#155E38]/20 flex items-center justify-between">
+                    <div className="mt-2 pt-2 border-t border-[#155E38]/20 flex items-center justify-between gap-2">
                       <span className="text-xs font-semibold text-[#0F4A2C]">Pilih Pos:</span>
                       <select
                         value={posSatpam}
                         onChange={(e) => onPosSatpamChange(e.target.value)}
-                        className="bg-white text-xs font-semibold text-[#0F4A2C] rounded-lg p-1 border border-[#155E38]/30"
+                        className="bg-white text-xs font-semibold text-[#0F4A2C] rounded-lg p-1.5 border border-[#155E38]/30 max-w-[200px]"
                       >
-                        <option value="Pos Satpam Utama FST (Lobby)">Pos Lobby FST</option>
-                        <option value="Pos Gerbang Barat">Gerbang Barat</option>
-                        <option value="Pos Gerbang Timur">Gerbang Timur</option>
+                        {POS_SATPAM_LIST.map((pos) => (
+                          <option key={pos.id} value={pos.name}>
+                            {pos.name}
+                          </option>
+                        ))}
                       </select>
+                    </div>
+                  )}
+
+                  {item.id === 'penemu' && isSelected && (
+                    <div className="mt-2.5 pt-2.5 border-t border-[#C59B27]/30 flex flex-col gap-1.5">
+                      <label htmlFor="finder-phone" className="text-xs font-bold text-[#92400E] flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5" aria-hidden="true" />
+                        Nomor WhatsApp Penemu (Terproteksi)
+                      </label>
+                      <input
+                        id="finder-phone"
+                        type="tel"
+                        value={contactPhone}
+                        onChange={(e) => onContactPhoneChange(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="0812-xxxx-xxxx (dibuka setelah verifikasi pemilik)"
+                        className="w-full bg-white text-[#14261B] rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#C59B27]/30 border border-[#C59B27]/40"
+                      />
                     </div>
                   )}
                 </label>
