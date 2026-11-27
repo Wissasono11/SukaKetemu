@@ -54,6 +54,19 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            urlPattern: ({ url }) => url.pathname === '/api/reports',
+            method: 'POST',
+            handler: 'NetworkOnly',
+            options: {
+              backgroundSync: {
+                name: 'sukaketemu-reports-queue',
+                options: {
+                  maxRetentionTime: 24 * 60,
+                },
+              },
+            },
+          },
+          {
             urlPattern: ({ url, request }) => {
               if (request.method !== 'GET') return false
               if (request.headers.has('authorization')) return false
