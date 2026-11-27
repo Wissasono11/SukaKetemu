@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import BerandaUtama from './pages/BerandaUtama'
-import LaporBarang, { type InitialReportLocation } from './pages/LaporBarang'
+import type { InitialReportLocation } from './pages/LaporBarang'
 import type { ReportType } from './types/lostFound'
+
+const LaporBarang = lazy(() => import('./pages/LaporBarang'))
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'beranda' | 'lapor'>('beranda')
@@ -26,13 +28,15 @@ function App() {
 
   if (currentPage === 'lapor') {
     return (
-      <LaporBarang
-        key={`${reportType}-${initialLocation?.ruangan ?? ''}-${initialLocation?.posSatpam ?? ''}`}
-        reportType={reportType}
-        initialLocation={initialLocation}
-        onBack={handleBackToBeranda}
-        onSuccess={handleBackToBeranda}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC]" />}>
+        <LaporBarang
+          key={`${reportType}-${initialLocation?.ruangan ?? ''}-${initialLocation?.posSatpam ?? ''}`}
+          reportType={reportType}
+          initialLocation={initialLocation}
+          onBack={handleBackToBeranda}
+          onSuccess={handleBackToBeranda}
+        />
+      </Suspense>
     )
   }
 

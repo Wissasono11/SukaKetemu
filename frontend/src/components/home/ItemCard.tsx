@@ -11,10 +11,11 @@ import { getCategoryIcon } from '../../utils/categoryIcons'
 
 interface ItemCardProps {
   item: LostFoundItem
+  priority?: boolean
   onClick?: () => void
 }
 
-export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
+export const ItemCard: React.FC<ItemCardProps> = ({ item, priority = false, onClick }) => {
   const [imgError, setImgError] = useState(false)
   const isPosSatpam = item.custody === 'pos_satpam'
 
@@ -41,7 +42,10 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onClick }) => {
           <img
             src={item.imageUrl}
             alt={item.imageAlt}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : undefined}
+            width={400}
+            height={300}
             onError={() => setImgError(true)}
             className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
               item.isPrivacySensitive ? 'blur-md scale-110' : ''

@@ -17,15 +17,43 @@ import { ItemCardSkeleton } from '../components/home/ItemCardSkeleton'
 import { ItemDetailModal } from '../components/home/ItemDetailModal'
 import { StewardshipCard } from '../components/home/StewardshipCard'
 import { BottomNav, type TabId } from '../components/home/BottomNav'
-import { CekKlaimModal } from '../components/modals/CekKlaimModal'
-import { ChallengeResponseModal } from '../components/modals/claim/ChallengeResponseModal'
 import { getClaimTickets, saveClaimTicket, updateClaimTicketStatus } from '../services/userDataService'
-import { FilterModal } from '../components/modals/FilterModal'
-import { QuickReportSheet } from '../components/modals/QuickReportSheet'
-import { NotificationDrawer, type AppNotification } from '../components/modals/NotificationDrawer'
-import { EksplorPage } from './EksplorPage'
-import { ProfilePage } from './ProfilePage'
+import type { AppNotification } from '../components/modals/NotificationDrawer'
 import { AiMatchSkeleton } from '../components/modals/aimatch/AiMatchSkeleton'
+
+const EksplorPage = lazy(() =>
+  import('./EksplorPage').then((m) => ({ default: m.EksplorPage }))
+)
+
+const ProfilePage = lazy(() =>
+  import('./ProfilePage').then((m) => ({ default: m.ProfilePage }))
+)
+
+const CekKlaimModal = lazy(() =>
+  import('../components/modals/CekKlaimModal').then((m) => ({ default: m.CekKlaimModal }))
+)
+
+const ChallengeResponseModal = lazy(() =>
+  import('../components/modals/claim/ChallengeResponseModal').then((m) => ({
+    default: m.ChallengeResponseModal,
+  }))
+)
+
+const FilterModal = lazy(() =>
+  import('../components/modals/FilterModal').then((m) => ({ default: m.FilterModal }))
+)
+
+const QuickReportSheet = lazy(() =>
+  import('../components/modals/QuickReportSheet').then((m) => ({
+    default: m.QuickReportSheet,
+  }))
+)
+
+const NotificationDrawer = lazy(() =>
+  import('../components/modals/NotificationDrawer').then((m) => ({
+    default: m.NotificationDrawer,
+  }))
+)
 
 const CocokAiPage = lazy(() =>
   import('./CocokAiPage').then((m) => ({ default: m.CocokAiPage }))
@@ -204,10 +232,11 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3">
-                  {filteredItems.map((item) => (
+                  {filteredItems.map((item, idx) => (
                     <ItemCard
                       key={item.id}
                       item={item}
+                      priority={idx < 2}
                       onClick={() => setSelectedItem(item)}
                     />
                   ))}
@@ -220,14 +249,16 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         )}
 
         {activeTab === 'eksplor' && (
-          <EksplorPage
-            initialSelectedPosId={selectedPosForMap}
-            onNavigateToPos={(posName) => {
-              handleFilterByPosName(posName)
-              setActiveTab('beranda')
-            }}
-            onScanQr={() => setModal('scanQr')}
-          />
+          <Suspense fallback={<main className="flex-1 px-4 pt-4 pb-24" />}>
+            <EksplorPage
+              initialSelectedPosId={selectedPosForMap}
+              onNavigateToPos={(posName) => {
+                handleFilterByPosName(posName)
+                setActiveTab('beranda')
+              }}
+              onScanQr={() => setModal('scanQr')}
+            />
+          </Suspense>
         )}
 
         {activeTab === 'cocok-ai' && (
@@ -253,15 +284,17 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         )}
 
         {activeTab === 'profil' && (
-          <ProfilePage
-            onNavigateToLapor={onNavigateToLapor}
-            onOpenAiMatch={() => setActiveTab('cocok-ai')}
-            onNavigateToPos={(posName) => {
-              const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
-              setSelectedPosForMap(matched ? matched.id : null)
-              setActiveTab('eksplor')
-            }}
-          />
+          <Suspense fallback={<main className="flex-1 px-4 pt-4 pb-24" />}>
+            <ProfilePage
+              onNavigateToLapor={onNavigateToLapor}
+              onOpenAiMatch={() => setActiveTab('cocok-ai')}
+              onNavigateToPos={(posName) => {
+                const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
+                setSelectedPosForMap(matched ? matched.id : null)
+                setActiveTab('eksplor')
+              }}
+            />
+          </Suspense>
         )}
 
         <BottomNav
@@ -272,28 +305,36 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         />
 
         {/* Quick Report Bottom Sheet */}
-        <QuickReportSheet
-          isOpen={modal === 'quickReport'}
-          onClose={() => setModal(null)}
-          onSelectType={(type) => onNavigateToLapor?.(type)}
-        />
+        {modal === 'quickReport' && (
+          <Suspense fallback={null}>
+            <QuickReportSheet
+              isOpen={true}
+              onClose={() => setModal(null)}
+              onSelectType={(type) => onNavigateToLapor?.(type)}
+            />
+          </Suspense>
+        )}
 
         {/* Drawer Notifikasi */}
-        <NotificationDrawer
-          isOpen={modal === 'notification'}
-          onClose={() => setModal(null)}
-          notifications={notifications}
-          onMarkAllAsRead={() => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })))}
-          onSelectNotification={(item) => {
-            setNotifications((p) => p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)))
-            if (item.actionTarget === 'aimatch') {
-              setModal(null)
-              setActiveTab('cocok-ai')
-            } else {
-              setModal(item.actionTarget === 'claim' ? 'cekKlaim' : null)
-            }
-          }}
-        />
+        {modal === 'notification' && (
+          <Suspense fallback={null}>
+            <NotificationDrawer
+              isOpen={true}
+              onClose={() => setModal(null)}
+              notifications={notifications}
+              onMarkAllAsRead={() => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })))}
+              onSelectNotification={(item) => {
+                setNotifications((p) => p.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)))
+                if (item.actionTarget === 'aimatch') {
+                  setModal(null)
+                  setActiveTab('cocok-ai')
+                } else {
+                  setModal(item.actionTarget === 'claim' ? 'cekKlaim' : null)
+                }
+              }}
+            />
+          </Suspense>
+        )}
 
         {/* Modal Detail Barang Temuan */}
         <ItemDetailModal
@@ -307,27 +348,31 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         />
 
         {/* Modal Interaktif Challenge-Response Verifikasi Klaim */}
-        <ChallengeResponseModal
-          isOpen={!!challengeItem}
-          item={challengeItem}
-          onClose={() => {
-            setChallengeItem(null)
-            setPendingClaimMatchId(null)
-          }}
-          onSuccess={async (newTicket) => {
-            await saveClaimTicket(newTicket)
-            setClaimTickets((prev) => [newTicket, ...prev])
-            if (pendingClaimMatchId) {
-              setAiMatches((prev) =>
-                prev.map((m) =>
-                  m.id === pendingClaimMatchId ? { ...m, status: 'claimed' as const } : m
-                )
-              )
-              setPendingClaimMatchId(null)
-            }
-            setModal('cekKlaim')
-          }}
-        />
+        {challengeItem && (
+          <Suspense fallback={null}>
+            <ChallengeResponseModal
+              isOpen={true}
+              item={challengeItem}
+              onClose={() => {
+                setChallengeItem(null)
+                setPendingClaimMatchId(null)
+              }}
+              onSuccess={async (newTicket) => {
+                await saveClaimTicket(newTicket)
+                setClaimTickets((prev) => [newTicket, ...prev])
+                if (pendingClaimMatchId) {
+                  setAiMatches((prev) =>
+                    prev.map((m) =>
+                      m.id === pendingClaimMatchId ? { ...m, status: 'claimed' as const } : m
+                    )
+                  )
+                  setPendingClaimMatchId(null)
+                }
+                setModal('cekKlaim')
+              }}
+            />
+          </Suspense>
+        )}
 
         {/* Modal Scanner QR Pos Satpam */}
         {modal === 'scanQr' && (
@@ -342,29 +387,37 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
         )}
 
         {/* Modal Cek Tiket & Status Klaim */}
-        <CekKlaimModal
-          isOpen={modal === 'cekKlaim'}
-          onClose={() => setModal(null)}
-          onNavigateToPos={(posName) => {
-            // Find pos ID and navigate straight to Eksplor campus map
-            const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
-            setSelectedPosForMap(matched ? matched.id : null)
-            setActiveTab('eksplor')
-            setModal(null)
-          }}
-          tickets={claimTickets}
-          onTicketsChange={handleTicketsChange}
-        />
+        {modal === 'cekKlaim' && (
+          <Suspense fallback={null}>
+            <CekKlaimModal
+              isOpen={true}
+              onClose={() => setModal(null)}
+              onNavigateToPos={(posName) => {
+                // Find pos ID and navigate straight to Eksplor campus map
+                const matched = POS_SATPAM_LIST.find((p) => p.name === posName || posName.includes(p.name) || p.name.includes(posName))
+                setSelectedPosForMap(matched ? matched.id : null)
+                setActiveTab('eksplor')
+                setModal(null)
+              }}
+              tickets={claimTickets}
+              onTicketsChange={handleTicketsChange}
+            />
+          </Suspense>
+        )}
 
         {/* Modal Filter Lanjutan */}
-        <FilterModal
-          isOpen={modal === 'filter'}
-          onClose={() => setModal(null)}
-          currentCriteria={filterCriteria}
-          onApply={(newCriteria) => setFilterCriteria(newCriteria)}
-          onReset={() => setFilterCriteria(DEFAULT_FILTER_CRITERIA)}
-          searchQuery={searchQuery}
-        />
+        {modal === 'filter' && (
+          <Suspense fallback={null}>
+            <FilterModal
+              isOpen={true}
+              onClose={() => setModal(null)}
+              currentCriteria={filterCriteria}
+              onApply={(newCriteria) => setFilterCriteria(newCriteria)}
+              onReset={() => setFilterCriteria(DEFAULT_FILTER_CRITERIA)}
+              searchQuery={searchQuery}
+            />
+          </Suspense>
+        )}
       </div>
     </div>
   )
