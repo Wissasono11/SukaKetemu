@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { sileo } from 'sileo'
 import {
   X,
   Shield,
@@ -53,8 +54,19 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
     }, 600)
   }
 
-  const handleShare = () => {
-    copy(window.location.href)
+  const handleShare = async () => {
+    const ok = await copy(window.location.href)
+    if (ok) {
+      sileo.success({
+        title: 'Tautan barang disalin',
+        description: 'Bagikan tautan ini ke pemilik atau rekan kampus.',
+      })
+    } else {
+      sileo.error({
+        title: 'Gagal menyalin tautan',
+        description: 'Browser membatasi akses clipboard. Salin URL dari bilah alamat.',
+      })
+    }
   }
 
   return (

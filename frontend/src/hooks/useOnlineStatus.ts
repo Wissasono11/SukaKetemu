@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { sileo } from 'sileo'
 import {
   getPendingOfflineReportsCount,
   syncPendingReports,
@@ -24,8 +25,29 @@ export function useOnlineStatus() {
     if (!navigator.onLine || isSyncing) return
     setIsSyncing(true)
     try {
-      await syncPendingReports()
+      const { successCount, failedCount } = await syncPendingReports()
       await refreshPendingCount()
+      if (successCount > 0 && failedCount === 0) {
+        sileo.success({
+          title: 'Sinkronisasi berhasil',
+          description: `${successCount} laporan offline telah terkirim.`,
+        })
+      } else if (successCount > 0 && failedCount > 0) {
+        sileo.warning({
+          title: 'Sebagian laporan tersinkronisasi',
+          description: `${successCount} terkirim, ${failedCount} gagal. Akan dicoba lagi nanti.`,
+        })
+      } else if (failedCount > 0) {
+        sileo.error({
+          title: 'Sinkronisasi laporan gagal',
+          description: `${failedCount} laporan masih di antrean. Periksa koneksi Anda.`,
+        })
+      }
+    } catch {
+      sileo.error({
+        title: 'Gagal menyinkronkan antrean',
+        description: 'Terjadi gangguan jaringan. Tekan Kirim untuk mencoba lagi.',
+      })
     } finally {
       setIsSyncing(false)
     }

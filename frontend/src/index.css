@@ -52,7 +52,9 @@
   * {
     box-sizing: border-box;
   }
-  html, body {
+
+  html,
+  body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -60,11 +62,20 @@
     background-color: #F8FAFC;
     color: #14261B;
   }
+
   /* Modern Web Guidance: Balanced heading typography and orphan-free body text */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     text-wrap: balance;
   }
-  p, blockquote, .pretty-text {
+
+  p,
+  blockquote,
+  .pretty-text {
     text-wrap: pretty;
   }
 
@@ -72,6 +83,7 @@
   dialog:modal {
     overscroll-behavior: contain;
   }
+
   dialog::backdrop {
     overflow: hidden;
     overscroll-behavior: contain;
@@ -98,6 +110,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -106,4 +119,18 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Sileo toast layering, dark-surface contrast, and typography adjustments */
+[data-sileo-viewport] {
+  z-index: 70;
+  --sileo-state-loading: #d4d4d8;
+}
+
+[data-sileo-title] {
+  text-transform: none;
+}
+
+[data-sileo-toast] {
+  filter: drop-shadow(0 10px 24px rgba(20, 38, 27, 0.24));
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import { sileo } from 'sileo'
 import { Plus, AlertTriangle } from 'lucide-react'
 import { ProfileHeader } from '../components/profile/ProfileHeader'
 import { ProfileStats } from '../components/profile/ProfileStats'
@@ -107,6 +108,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       )
     )
     void updateClaimTicketStatus(targetId, 'cancelled', 'Dibatalkan Pengguna')
+    sileo.info({
+      title: 'Tiket klaim dibatalkan',
+      description: 'Tiket dipindahkan ke riwayat. Anda dapat mengajukan klaim ulang.',
+    })
   }
 
   const cancelTargetTicket = claimTickets.find((t) => t.id === cancelTargetId)

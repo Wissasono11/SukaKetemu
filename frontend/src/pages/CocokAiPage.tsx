@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { sileo } from 'sileo'
 import {
   RefreshCw,
   FileCheck,
   Clock,
   Plus,
   AlertTriangle,
-  RotateCcw,
 } from 'lucide-react'
 import type { AiMatchItem, UserReportItem } from '../types/lostFound'
 import { getMyReports } from '../services/userDataService'
@@ -36,8 +36,6 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [undoMatch, setUndoMatch] = useState<AiMatchItem | null>(null)
-  const undoTimerRef = useRef<number | null>(null)
   const heroSectionRef = useRef<HTMLDivElement | null>(null)
 
   const applyLoadedReports = useCallback((activeLost: UserReportItem[]) => {
@@ -77,9 +75,6 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
 
     return () => {
       active = false
-      if (undoTimerRef.current) {
-        clearTimeout(undoTimerRef.current)
-      }
     }
   }, [applyLoadedReports])
 
@@ -137,30 +132,25 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
     onRejectMatch(matchId)
 
     if (rejectedItem && onUndoRejectMatch) {
-      if (undoTimerRef.current) {
-        clearTimeout(undoTimerRef.current)
-      }
-      setUndoMatch(rejectedItem)
-      undoTimerRef.current = window.setTimeout(() => {
-        setUndoMatch(null)
-        undoTimerRef.current = null
-      }, 5000)
+      const toastId = sileo.action({
+        title: `Kandidat #${rejectedItem.rank} disembunyikan`,
+        description: 'Ditandai bukan milik Anda.',
+        duration: 3500,
+        autopilot: { expand: 50, collapse: 3500 },
+        button: {
+          title: 'Urungkan',
+          onClick: () => {
+            sileo.dismiss(toastId)
+            onUndoRejectMatch(rejectedItem.id)
+            setHeroByReport((prev) => ({
+              ...prev,
+              [rejectedItem.lostReportId]: rejectedItem.id,
+            }))
+            setSelectedReportId(rejectedItem.lostReportId)
+          },
+        },
+      })
     }
-  }
-
-  const handleUndoReject = () => {
-    if (!undoMatch || !onUndoRejectMatch) return
-    if (undoTimerRef.current) {
-      clearTimeout(undoTimerRef.current)
-      undoTimerRef.current = null
-    }
-    onUndoRejectMatch(undoMatch.id)
-    setHeroByReport((prev) => ({
-      ...prev,
-      [undoMatch.lostReportId]: undoMatch.id,
-    }))
-    setSelectedReportId(undoMatch.lostReportId)
-    setUndoMatch(null)
   }
 
   const headerSubtitle = isLoading
@@ -375,29 +365,6 @@ export const CocokAiPage: React.FC<CocokAiPageProps> = ({
             </button>
           )}
         </section>
-      )}
-
-      {/* Toast Urungkan Penolakan */}
-      {undoMatch && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[416px]"
-        >
-          <div className="rounded-xl bg-[#14261B] text-white px-3.5 py-2.5 shadow-lg flex items-center justify-between gap-3">
-            <span className="text-xs leading-snug truncate">
-              Kandidat #{undoMatch.rank} ditandai bukan milik Anda
-            </span>
-            <button
-              type="button"
-              onClick={handleUndoReject}
-              className="min-h-[36px] px-2.5 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-bold text-white inline-flex items-center gap-1 flex-shrink-0 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Urungkan</span>
-            </button>
-          </div>
-        </div>
       )}
     </main>
   )

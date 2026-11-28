@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { sileo } from 'sileo'
 import type { ReportType } from '../types/lostFound'
 import { LaporHeader } from '../components/lapor/LaporHeader'
 import { OfflineStatusBanner } from '../components/common/OfflineStatusBanner'
@@ -114,6 +115,17 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
         setIsSuccess(true)
       }
       setTimeout(() => {
+        if (!navigator.onLine) {
+          sileo.info({
+            title: 'Tersimpan di antrean offline',
+            description: 'Laporan akan otomatis terkirim saat koneksi kembali.',
+          })
+        } else {
+          sileo.success({
+            title: isFound ? 'Laporan temuan terbit' : 'Laporan kehilangan terbit',
+            description: 'Civitas UIN SUKA kini dapat melihat laporan Anda di beranda.',
+          })
+        }
         if (onSuccess) onSuccess()
         else onBack()
       }, 1500)
@@ -125,12 +137,19 @@ export const LaporBarang: React.FC<LaporBarangProps> = ({
         setIsOfflineSaved(true)
         setIsSuccess(true)
         setTimeout(() => {
+          sileo.info({
+            title: 'Disimpan ke antrean offline',
+            description: 'Server belum terjangkau. Laporan aman di perangkat Anda.',
+          })
           if (onSuccess) onSuccess()
           else onBack()
         }, 1500)
       } catch (dbErr) {
         console.error('Fatal Dexie error:', dbErr)
-        alert('Gagal menyimpan laporan. Silakan coba lagi.')
+        sileo.error({
+          title: 'Gagal menyimpan laporan',
+          description: 'Penyimpanan perangkat bermasalah atau penuh. Coba kirim ulang.',
+        })
       }
     } finally {
       setIsSubmitting(false)

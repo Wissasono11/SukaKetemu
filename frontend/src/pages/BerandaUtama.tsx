@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react'
+import { sileo } from 'sileo'
 import { ChevronRight, Search } from 'lucide-react'
 import type { AiMatchItem, ClaimTicket, LostFoundItem } from '../types/lostFound'
 import { DEFAULT_FILTER_CRITERIA } from '../types/lostFound'
@@ -373,6 +374,10 @@ export const BerandaUtama: React.FC<BerandaUtamaProps> = ({ onNavigateToLapor })
                   setPendingClaimMatchId(null)
                 }
                 setModal('cekKlaim')
+                sileo.success({
+                  title: 'Tiket klaim diterbitkan',
+                  description: `Kode #${newTicket.ticketNumber} siap ditunjukkan di Pos Satpam.`,
+                })
               }}
             />
           </Suspense>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { sileo } from 'sileo'
 import {
   MapPin,
   Copy,
@@ -40,8 +41,19 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
     return () => clearInterval(interval)
   }, [isReady, secondsLeft])
 
-  const handleCopyOtp = (otp: string) => {
-    copyOtp(otp)
+  const handleCopyOtp = async (otp: string) => {
+    const ok = await copyOtp(otp)
+    if (ok) {
+      sileo.success({
+        title: 'Kode OTP disalin',
+        description: 'Tunjukkan kode 6-digit ini kepada petugas Pos Satpam.',
+      })
+    } else {
+      sileo.error({
+        title: 'Gagal menyalin kode OTP',
+        description: 'Salin angka OTP secara manual dari kartu tiket.',
+      })
+    }
   }
 
   const handleRegenerateOtp = async () => {
@@ -50,8 +62,15 @@ export const ClaimTicketCard: React.FC<ClaimTicketCardProps> = ({
       const { otpCode, ttlSeconds } = await regenerateClaimOtp(ticket.id)
       setOverrideOtp({ ticketId: ticket.id, otp: otpCode })
       setSecondsLeft(ttlSeconds)
+      sileo.success({
+        title: 'Kode OTP diperbarui',
+        description: 'Kode baru berlaku 5 menit untuk pengambilan barang.',
+      })
     } catch {
-      // Abaikan kegagalan jaringan agar OTP terakhir tetap tampil
+      sileo.error({
+        title: 'Gagal memperbarui OTP',
+        description: 'Periksa koneksi Anda. Kode OTP terakhir masih dapat dicoba.',
+      })
     } finally {
       setIsRefreshing(false)
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { sileo } from 'sileo'
 import { X, ShieldCheck, FileCheck, CheckCircle2, Loader2 } from 'lucide-react'
 import type { ClaimTicket } from '../../types/lostFound'
 import { INITIAL_CLAIM_TICKETS } from '../../data/mockItems'
@@ -81,6 +82,10 @@ const CekKlaimModalContent: React.FC<CekKlaimModalProps> = ({
       )
       setIsCancelling(false)
       setCancelModalTicketId(null)
+      sileo.info({
+        title: 'Tiket klaim dibatalkan',
+        description: 'Tiket dipindahkan ke riwayat. Anda dapat mengklaim ulang kapan saja.',
+      })
     }, 500)
   }
 
